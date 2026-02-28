@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<layout>
-    <grid cols_landscape="6"
-          rows_landscape="4"
-          cols_portrait="3"
-          rows_portrait="8"
-          gap="10"
-          padding="40" />
-</layout>
