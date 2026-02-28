@@ -1,0 +1,6 @@
+<layout>
+    <grid cols_landscape="6" rows_landscape="4" cols_portrait="3" rows_portrait="8" gap="10" padding="40" />
+    <item id="3" label="Today's calendar events" locations="{C,1}, {C,2}, {D,1}, {D,2}" type="content">
+    <item id="10" label="How do I use this terminal?" locations="{D,0}" link="howitsmade.html" image="images/code_ss.png" /></item>
+    </grid>
+</layout>

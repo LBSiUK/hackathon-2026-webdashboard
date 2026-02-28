@@ -1,0 +1,9 @@
+<layout>
+    <item id="98" type="clock" locations="{A,0}" />
+    <item id="2" label="Settings" locations="{A,1}" type="menu" link="contact.html" />
+        <item id="5" label="Weather" locations="{B,0}, {B,1}" type="content">
+                <![CDATA[
+                <div data-weather data-lat="50.8225" data-lon="-0.1372"></div>
+                ]]>
+        </item>
+</layout>

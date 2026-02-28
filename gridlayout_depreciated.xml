@@ -1,0 +1,35 @@
+<layout>
+    <!-- ROW A (0) -->
+    <item id="1" type="nav" locations="{A,0}" link="index.html" />
+    <item id="98" type="clock" locations="{A,1}" />
+    <item id="2" label="Contact &amp; Socials" locations="{A,2}" type="menu" link="contact.html" />
+    <item id="3" label="About" locations="{A,3}" type="menu" link="about.html" />
+    <item id="4" label="Resources" locations="{A,4}" type="menu" link="resources.html" />
+    <item id="7" label="YouTube Channel" locations="{A,5}" type="menu" link="https://youtube.com/lbsiuk" />
+
+    <!-- ROW B (1) -->
+    <item id="5" label="Weather" locations="{B,0}" />
+    <item id="6" label="News Feed" locations="{B,1}, {B,2}" />
+    <item id="9" label="Maps" locations="{B,3}" />
+    
+    <!-- Big Content Tile Top Half -->
+    <item id="99" type="content" locations="{C,4}, {C,5}, {D,4}, {D,5}">
+        <![CDATA[
+            <h2>Welcome to my new site!</h2>
+            <p>I've taken my original website and recreated it in the style of Windows 8's start menu because I unusually like it.</p>
+        ]]>
+    </item>
+
+    <!-- ROW C (2) -->
+    <item id="12" label="Photo Gallery" locations="{C,0}, {C,1}" link="gallery.html" image="images/pslide-roger.jpeg"/>
+    <item id="8" label="FFmpeg scripts" locations="{C,2}" link="ffmpegscripts.html" image="images/ffmpeg_logo.svg" />
+    <item id="10" label="Old website" locations="{C,3}" link="indexold.html" image="images/oldsite.png">
+    <!-- Content Tile Bottom Half occupies C4, C5 -->
+
+    <!-- ROW D (3) - NEW ROW -->
+    <item id="13" label="OneDrive" locations="{D,0}" />
+    <item id="14" label="Store" locations="{D,1}, {D,2}" />
+    <item id="16" label="How I made this" locations="{D,3}" link="howitsmade.html" image="images/code_ss.png" />
+    <item id="17" label="Calculator" locations="{B,4}" />
+    <item id="18" label="Terminal" locations="{B,5}" />
+</layout>

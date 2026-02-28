@@ -1,0 +1,7 @@
+<layout>
+    <item id="12" label="BBC News" locations="{A,3, {A,4}, {B,3}, {B,4}" type="content">
+        <![CDATA[
+        <div data-rss-url="https://feeds.bbci.co.uk/news/rss.xml?edition=uk">Loading BBC News...</div>
+        ]]>
+    </item>
+</layout>

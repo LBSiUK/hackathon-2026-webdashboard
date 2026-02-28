@@ -1,0 +1,19 @@
+<layout>
+    <!-- Rows C-D, Cols 3-5 -->
+    
+    <!--- <item id="99" type="content" locations="{C,4}, {C,5}, {D,4}, {D,5}">
+        <![CDATA[
+            <h2>Welcome to my new site!</h2>
+            <p>I've taken my original website and recreated it in the style of Windows 8's start menu because I unusually like it.</p>
+        ]]>
+    </item>
+    -->
+    <item id="6" label="Today's tasks" locations="{C,3}, {C,4}, {D,3}, {D, 4}" />
+
+    <item id="10" label="Talk to the computer" locations="{D,5}" type="content" data-bg="#d92b2b" data-class="mic-tile">
+        <![CDATA[
+        <img src="images/microphone.svg" class="menu-icon" alt="Mic">
+        <span class="tile-label">Talk to the computer</span>
+        ]]>
+    </item>
+</layout>
