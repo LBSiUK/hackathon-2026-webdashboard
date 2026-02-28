@@ -481,28 +481,16 @@
             const gridContainer = document.getElementById('grid-container');
             gridContainer.innerHTML = ''; 
 
-            const isPortrait = window.innerHeight > window.innerWidth;
-            
             allGridItems.forEach(item => {
                 const id = item.getAttribute('id');
                 const label = item.getAttribute('label');
                 const locString = item.getAttribute('locations');
                 const type = item.getAttribute('type');
-                const link = item.getAttribute('link'); 
+                const link = item.getAttribute('link');
                 const image = item.getAttribute('image');
-                
+
                 const rawLocs = locString.split('},').map(s => s.includes('}') ? s : s + '}');
-                let coords = rawLocs.map(parseCoordinate);
-                if (isPortrait) {
-                    coords = coords.map(c => {
-                        if (c.r < 2) {
-                            if (c.c < 3) return { r: c.r * 2, c: c.c };
-                            return { r: c.r * 2 + 1, c: c.c - 3 };
-                        }
-                        if (c.c < 3) return { r: c.r + 2, c: c.c };
-                        return { r: c.r + 4, c: c.c - 3 };
-                    });
-                }
+                const coords = rawLocs.map(parseCoordinate);
 
                 const minRow = Math.min(...coords.map(p => p.r));
                 const maxRow = Math.max(...coords.map(p => p.r));
@@ -840,24 +828,19 @@
             const grid = xmlDoc && xmlDoc.querySelector('layout grid');
             if (!grid) return null;
             return {
-                colsLandscape: parseInt(grid.getAttribute('cols_landscape'), 10) || 6,
-                rowsLandscape: parseInt(grid.getAttribute('rows_landscape'), 10) || 4,
-                colsPortrait: parseInt(grid.getAttribute('cols_portrait'), 10) || 3,
-                rowsPortrait: parseInt(grid.getAttribute('rows_portrait'), 10) || 8,
+                cols: parseInt(grid.getAttribute('cols'), 10) || 6,
+                rows: parseInt(grid.getAttribute('rows'), 10) || 4,
                 gap: parseInt(grid.getAttribute('gap'), 10) || 10,
                 padding: parseInt(grid.getAttribute('padding'), 10) || 40
             };
         }
 
         function resizeGrid(layoutConfig) {
-            const config = layoutConfig || {
-                colsLandscape: 6, rowsLandscape: 4, colsPortrait: 3, rowsPortrait: 8, gap: 10, padding: 40
-            };
+            const config = layoutConfig || { cols: 6, rows: 4, gap: 10, padding: 40 };
             const availableHeight = window.innerHeight;
             const availableWidth = window.innerWidth;
-            const isPortrait = availableHeight > availableWidth;
-            const cols = isPortrait ? config.colsPortrait : config.colsLandscape;
-            const rows = isPortrait ? config.rowsPortrait : config.rowsLandscape;
+            const cols = config.cols;
+            const rows = config.rows;
             const gap = config.gap;
             const padding = config.padding;
 
@@ -884,20 +867,16 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             const parser = new DOMParser();
-            const gridFiles = ['grid_part1.xml', 'grid_part2.xml', 'grid_part3.xml', 'grid_part4.xml'];
 
-            Promise.all(gridFiles.map(url => fetch(url).then(res => res.text())))
-                .then(contents => {
-                    allGridItems = [];
-                    contents.forEach((xmlContent, i) => {
-                        const xmlDoc = parser.parseFromString(xmlContent, 'text/xml');
-                        const items = Array.from(xmlDoc.getElementsByTagName('item'));
-                        allGridItems = allGridItems.concat(items);
-                        if (i === 2) layoutConfig = parseLayoutConfig(xmlDoc);
-                    });
+            fetch('grid.xml')
+                .then(res => res.text())
+                .then(xmlText => {
+                    const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
+                    layoutConfig = parseLayoutConfig(xmlDoc);
+                    allGridItems = Array.from(xmlDoc.getElementsByTagName('item'));
                     resizeGrid(layoutConfig);
                 })
-                .catch(err => console.error('Error loading grid files:', err));
+                .catch(err => console.error('Error loading grid.xml:', err));
 
             window.addEventListener('resize', () => resizeGrid(layoutConfig));
         });
