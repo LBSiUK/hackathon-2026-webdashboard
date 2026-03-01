@@ -2,30 +2,42 @@
 <layout>
     <grid cols="6" rows="4" gap="10" padding="40" />
 
-    <item id="98" type="clock" locations="{A,0}" />
-    <item id="2" label="Settings" locations="{A,1}" type="menu" link="contact.html" />
+    <item id="98" type="clock" locations="{A,0}, {A,1}" />
 
-    <item id="5" label="Weather" locations="{B,0}, {B,1}" type="content">
+    
+
+    <item id="5"  data-class="weather-tile" label="Weather" locations="{B,0}, {B,1}" type="content">
+
         <![CDATA[
         <div data-weather data-lat="50.8225" data-lon="-0.1372"></div>
         ]]>
     </item>
 
-    <item id="12" label="BBC News" locations="{A,3}, {A,4}, {B,3}, {B,4}" type="content">
+    <item id="12" label="News" locations="{A,2}, {A,3}, {B,2}, {B,3}" type="content">
         <![CDATA[
         <div data-rss-url="https://feeds.bbci.co.uk/news/rss.xml?edition=uk">Loading BBC News...</div>
         ]]>
     </item>
 
-    <item id="3" label="Today's calendar events" locations="{C,1}, {C,2}, {D,1}, {D,2}" type="content" />
-    <item id="10" label="How do I use this terminal?" locations="{D,0}" link="howitsmade.html" image="images/code_ss.png" />
-
-    <item id="6" label="Today's tasks" locations="{C,3}, {C,4}, {D,3}, {D,4}" />
-
-    <item id="10" label="Talk to the computer" locations="{D,5}" type="content" data-bg="#d92b2b" data-class="mic-tile">
+    <item id="chat" label="Chat" locations="{A,4}, {A,5}, {B,4}, {B,5}, {C,4}, {C,5}" type="content" data-class="chatbot-tile">
         <![CDATA[
-        <img src="images/microphone.svg" class="menu-icon" alt="Mic">
-        <span class="tile-label">Talk to the computer</span>
+        <div class="chat-placeholder" data-chat-placeholder>
+            <div class="chat-header">Chat</div>
+            <div class="chat-messages">
+                <div class="chat-msg bot"><span>Hello. How can I help you today?</span></div>
+                <div class="chat-msg user"><span>This is a placeholder. Chat coming soon.</span></div>
+            </div>
+            <div class="chat-input-row">
+                <input type="text" class="chat-input" placeholder="Type a message..." disabled>
+                <button type="button" class="chat-send" disabled aria-label="Send">Send</button>
+            </div>
+        </div>
         ]]>
     </item>
+
+    <item id="3" label="Today's calendar events" locations="{C,0}, {C,1}, {D,0}, {D,1}" type="content" />
+    <item id="10" label="How do I use this terminal?" locations="{D,4}" link="howitsmade.html"/>
+    <item id="10" label="Settings" locations="{D,5}" type="menu" link="settings.html" />
+
+    <item id="6" label="Today's tasks" locations="{C,2}, {C,3}, {D,2}, {D,3}" type="content" />
 </layout>

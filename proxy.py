@@ -5,9 +5,8 @@ from urllib.parse import urlparse
 
 app = Flask(__name__)
 
-# Simple in-memory cache: {url: (timestamp, content, headers)}
 cache = {}
-CACHE_TTL = 600  # seconds (10 minutes)
+CACHE_TTL = 600
 
 def fetch_url(url):
     try:
@@ -16,13 +15,13 @@ def fetch_url(url):
     except Exception as e:
         return None
 
+
 @app.route('/rss_cached')
 def rss_cached():
     url = request.args.get('url')
     if not url:
         abort(400, 'url required')
 
-    # Basic validation
     parsed = urlparse(url)
     if parsed.scheme not in ('http', 'https'):
         abort(400, 'invalid url')
@@ -39,10 +38,10 @@ def rss_cached():
         headers = {'Content-Type': r.headers.get('Content-Type', 'text/xml; charset=utf-8')}
         cache[url] = (now, content, headers)
 
-    # Return with CORS allowed
     resp = Response(content, headers)
     resp.headers['Access-Control-Allow-Origin'] = '*'
     return resp
+
 
 @app.route('/proxy')
 def proxy_page():
@@ -58,11 +57,10 @@ def proxy_page():
         abort(502, 'upstream fetch failed')
 
     content = r.content
-    # Remove X-Frame-Options header to allow framing
     resp = Response(content, mimetype=r.headers.get('Content-Type', 'text/html'))
     resp.headers['Access-Control-Allow-Origin'] = '*'
-    # Do not forward security headers that prevent framing
     return resp
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)

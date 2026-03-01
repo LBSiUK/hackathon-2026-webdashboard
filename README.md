@@ -35,8 +35,10 @@ To run the FastAPI server locally:
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements-fastapi.txt
-uvicorn server:app --host 0.0.0.0 --port 5020 --reload
+uvicorn server:app --host 0.0.0.0 --port 5020 --reload --reload-exclude '.venv/*'
 ```
+
+Use `--reload-exclude '.venv/*'` so the watcher ignores the virtualenv; otherwise changes under `.venv/` (e.g. from imports) can trigger repeated restarts.
 
 Google Calendar
 ---------------
