@@ -486,6 +486,432 @@ body {
 }
 
 
+.tile.calendar-embed-tile.content-tile {
+    padding: 0;
+    overflow: hidden;
+}
+
+
+.tile.calendar-embed-tile .calendar-embed-wrap {
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+
+.tile.calendar-embed-tile .calendar-embed-wrap iframe {
+    flex: 1;
+    width: 100%;
+    min-height: 0;
+    border: none;
+}
+
+
+.tile.spotify-tile.content-tile {
+    padding: 0;
+    overflow: hidden;
+    background: rgba(18, 18, 22, 0.45) !important;
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+
+.spotify-embed-wrap {
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+}
+
+
+.spotify-embed-wrap iframe {
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    border: none;
+}
+
+
+.spotify-widget {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0;
+    padding: 0.5rem;
+    gap: 0.4rem;
+}
+
+
+.spotify-connect {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    height: 100%;
+    text-align: center;
+    padding: 1rem;
+}
+
+
+.spotify-label {
+    font-size: calc(var(--tile-size) * 0.11);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: #fff;
+}
+
+
+.spotify-connect-btn {
+    display: inline-block;
+    padding: 0.5em 1.2em;
+    background: #1db954;
+    color: #fff;
+    border-radius: 500px;
+    text-decoration: none;
+    font-weight: 700;
+    font-size: calc(var(--tile-size) * 0.07);
+    transition: transform 0.15s ease, background 0.15s ease;
+    box-shadow: 0 2px 8px rgba(29, 185, 84, 0.35);
+}
+
+
+.spotify-connect-btn:hover {
+    background: #1ed760;
+    transform: scale(1.03);
+}
+
+
+.spotify-hint {
+    font-size: calc(var(--tile-size) * 0.06);
+    opacity: 0.85;
+    max-width: 92%;
+    line-height: 1.4;
+    color: rgba(255, 255, 255, 0.85);
+}
+
+
+.spotify-player-ui {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: 0.2rem 0;
+    gap: 0.35rem;
+    min-height: 0;
+}
+
+
+.spotify-glass {
+    background: rgba(255, 255, 255, 0.06);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    padding: 0.4rem 0.5rem;
+    flex-shrink: 0;
+}
+
+
+.spotify-now-playing-card {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    min-width: 0;
+    padding: 0.5rem 0.55rem;
+    flex: 0 0 auto;
+}
+
+
+.spotify-art-wrap {
+    flex-shrink: 0;
+    width: calc(var(--tile-size) * 0.85);
+    height: calc(var(--tile-size) * 0.85);
+    max-width: 80px;
+    max-height: 80px;
+    border-radius: 12px;
+    overflow: hidden;
+    background: rgba(0, 0, 0, 0.25);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+
+.spotify-player-ui .spotify-art {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+
+.spotify-track-info {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    flex: 1;
+    gap: 0.2rem;
+    justify-content: center;
+}
+
+
+.spotify-now-playing-label {
+    font-size: calc(var(--tile-size) * 0.065);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #1db954;
+    opacity: 0.95;
+}
+
+
+.spotify-track-name {
+    font-weight: 700;
+    font-size: calc(var(--tile-size) * 0.14);
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: #fff;
+    letter-spacing: -0.01em;
+}
+
+
+.spotify-artist-name {
+    font-size: calc(var(--tile-size) * 0.11);
+    color: rgba(255, 255, 255, 0.75);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+
+.spotify-controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    padding: 0.35rem 0.5rem;
+}
+
+
+.spotify-btn {
+    width: 2.4em;
+    height: 2.4em;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    font-size: calc(var(--tile-size) * 0.09);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s ease, transform 0.1s ease;
+}
+
+
+.spotify-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(1.05);
+}
+
+
+.spotify-play {
+    width: 2.8em;
+    height: 2.8em;
+    font-size: calc(var(--tile-size) * 0.11);
+    background: #1db954 !important;
+    color: #fff !important;
+}
+
+
+.spotify-play:hover {
+    background: #1ed760 !important;
+}
+
+
+.spotify-volume-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.3rem 0.5rem;
+}
+
+
+.spotify-vol-icon {
+    font-size: calc(var(--tile-size) * 0.07);
+    opacity: 0.8;
+    flex-shrink: 0;
+}
+
+
+.spotify-volume {
+    flex: 1;
+    min-width: 0;
+    height: 5px;
+    -webkit-appearance: none;
+    appearance: none;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 3px;
+    outline: none;
+}
+
+
+.spotify-volume::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #1db954;
+    cursor: pointer;
+    box-shadow: 0 0 6px rgba(29, 185, 84, 0.5);
+    transition: transform 0.1s ease;
+}
+
+
+.spotify-volume::-webkit-slider-thumb:hover {
+    transform: scale(1.15);
+}
+
+
+.spotify-volume::-moz-range-thumb {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #1db954;
+    cursor: pointer;
+    border: none;
+    box-shadow: 0 0 6px rgba(29, 185, 84, 0.5);
+}
+
+
+.spotify-device-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.3rem 0.5rem;
+}
+
+
+.spotify-device-label {
+    font-size: calc(var(--tile-size) * 0.058);
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.7);
+    flex-shrink: 0;
+}
+
+
+.spotify-device-select {
+    flex: 1;
+    min-width: 0;
+    padding: 0.25rem 0.5rem;
+    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: rgba(0, 0, 0, 0.25);
+    color: #fff;
+    font-size: calc(var(--tile-size) * 0.06);
+    cursor: pointer;
+    outline: none;
+}
+
+
+.spotify-device-select:focus {
+    border-color: #1db954;
+    box-shadow: 0 0 0 2px rgba(29, 185, 84, 0.25);
+}
+
+
+.spotify-device-select option {
+    background: #1a1a1a;
+    color: #fff;
+}
+
+
+.spotify-open-link {
+    font-size: calc(var(--tile-size) * 0.055);
+    color: #1db954;
+    opacity: 0.95;
+    flex-shrink: 0;
+    text-decoration: none;
+    font-weight: 600;
+    padding: 0.15rem 0;
+    transition: color 0.15s ease;
+}
+
+
+.spotify-open-link:hover {
+    color: #1ed760;
+}
+
+
+.spotify-now-playing {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    height: 100%;
+    min-height: 0;
+}
+
+
+.spotify-now-playing.spotify-idle {
+    flex-direction: column;
+    justify-content: center;
+    text-align: center;
+}
+
+
+.spotify-art {
+    width: calc(var(--tile-size) * 0.9);
+    height: calc(var(--tile-size) * 0.9);
+    border-radius: 6px;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+
+.spotify-info {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    gap: 0.2em;
+}
+
+
+.spotify-track {
+    font-weight: 600;
+    font-size: calc(var(--tile-size) * 0.1);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+
+.spotify-artist,
+.spotify-album {
+    font-size: calc(var(--tile-size) * 0.075);
+    opacity: 0.9;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+
+.spotify-open {
+    margin-top: 0.4em;
+    font-size: calc(var(--tile-size) * 0.07);
+    color: var(--theme-text);
+    opacity: 0.85;
+}
+
+
+.spotify-idle-msg {
+    font-size: calc(var(--tile-size) * 0.08);
+    opacity: 0.85;
+}
+
+
 .chat-placeholder {
     display: flex;
     flex-direction: column;
@@ -821,4 +1247,301 @@ body.page-settings .auth-status {
     margin-top: 0.5rem;
     font-size: 0.95rem;
     opacity: 0.9;
+}
+
+
+/* --- Gmail Widget --- */
+.tile.gmail-tile.content-tile {
+    background: rgba(18, 18, 22, 0.45);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    overflow: hidden;
+}
+
+.gmail-widget {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: calc(var(--tile-size) * 0.05);
+    gap: calc(var(--tile-size) * 0.03);
+    overflow: hidden;
+    font-size: calc(var(--tile-size) * 0.065);
+}
+
+.gmail-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+    flex-shrink: 0;
+    padding-bottom: 0.3em;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.gmail-title {
+    font-weight: 700;
+    font-size: 1.2em;
+    flex: 1;
+}
+
+.gmail-btn {
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.15);
+    color: inherit;
+    border-radius: 6px;
+    padding: 0.25em 0.6em;
+    cursor: pointer;
+    font-size: 0.85em;
+    transition: background 0.15s;
+}
+
+.gmail-btn:hover {
+    background: rgba(255,255,255,0.2);
+}
+
+.gmail-compose-btn {
+    background: rgba(219, 68, 55, 0.25);
+    border-color: rgba(219, 68, 55, 0.4);
+}
+
+.gmail-compose-btn:hover {
+    background: rgba(219, 68, 55, 0.4);
+}
+
+.gmail-list {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3em;
+}
+
+.gmail-email-card {
+    background: rgba(255,255,255,0.06);
+    backdrop-filter: blur(8px);
+    border-radius: 8px;
+    padding: 0.5em 0.6em;
+    cursor: pointer;
+    transition: background 0.15s;
+    border: 1px solid rgba(255,255,255,0.08);
+}
+
+.gmail-email-card:hover {
+    background: rgba(255,255,255,0.12);
+}
+
+.gmail-email-from {
+    font-weight: 600;
+    font-size: 0.9em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.gmail-email-subject {
+    font-weight: 500;
+    font-size: 0.85em;
+    opacity: 0.95;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.gmail-email-snippet {
+    font-size: 0.75em;
+    opacity: 0.6;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.gmail-email-date {
+    font-size: 0.65em;
+    opacity: 0.45;
+    margin-top: 0.15em;
+}
+
+.gmail-detail {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    gap: 0.3em;
+    overflow: hidden;
+}
+
+.gmail-detail-subject {
+    font-weight: 700;
+    font-size: 1.05em;
+}
+
+.gmail-detail-meta {
+    font-size: 0.75em;
+    opacity: 0.6;
+}
+
+.gmail-detail-body {
+    flex: 1;
+    overflow-y: auto;
+    font-size: 0.8em;
+    opacity: 0.85;
+    line-height: 1.4;
+    background: rgba(255,255,255,0.04);
+    border-radius: 6px;
+    padding: 0.5em;
+}
+
+.gmail-detail-actions {
+    display: flex;
+    gap: 0.4em;
+    flex-shrink: 0;
+}
+
+.gmail-summarize-btn {
+    background: rgba(66, 133, 244, 0.25);
+    border-color: rgba(66, 133, 244, 0.4);
+}
+
+.gmail-summarize-btn:hover {
+    background: rgba(66, 133, 244, 0.4);
+}
+
+.gmail-reply-btn,
+.gmail-send-btn {
+    background: rgba(219, 68, 55, 0.25);
+    border-color: rgba(219, 68, 55, 0.4);
+}
+
+.gmail-reply-btn:hover,
+.gmail-send-btn:hover {
+    background: rgba(219, 68, 55, 0.4);
+}
+
+.gmail-ai-result {
+    flex-shrink: 0;
+}
+
+.gmail-ai-summary {
+    background: rgba(66, 133, 244, 0.1);
+    border-radius: 6px;
+    padding: 0.5em;
+    font-size: 0.8em;
+    line-height: 1.35;
+}
+
+.gmail-compose {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    gap: 0.3em;
+    overflow: hidden;
+}
+
+.gmail-compose-title {
+    font-weight: 700;
+    font-size: 1em;
+}
+
+.gmail-input {
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 6px;
+    padding: 0.4em 0.5em;
+    color: inherit;
+    font-size: 0.85em;
+    outline: none;
+}
+
+.gmail-input:focus {
+    border-color: rgba(66, 133, 244, 0.5);
+}
+
+.gmail-textarea {
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 6px;
+    padding: 0.4em 0.5em;
+    color: inherit;
+    font-size: 0.85em;
+    flex: 1;
+    resize: none;
+    outline: none;
+    min-height: 3em;
+}
+
+.gmail-textarea:focus {
+    border-color: rgba(66, 133, 244, 0.5);
+}
+
+.gmail-compose-actions {
+    display: flex;
+    gap: 0.4em;
+    flex-shrink: 0;
+}
+
+.gmail-ai-draft-btn {
+    background: rgba(66, 133, 244, 0.25);
+    border-color: rgba(66, 133, 244, 0.4);
+}
+
+.gmail-ai-draft-btn:hover {
+    background: rgba(66, 133, 244, 0.4);
+}
+
+.gmail-compose-status {
+    flex-shrink: 0;
+    font-size: 0.8em;
+}
+
+.gmail-loading {
+    opacity: 0.6;
+    font-style: italic;
+}
+
+.gmail-success {
+    color: #1db954;
+}
+
+.gmail-error {
+    color: #e74c3c;
+}
+
+.gmail-connect {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    gap: 0.8em;
+}
+
+.gmail-connect-btn {
+    background: rgba(66, 133, 244, 0.3);
+    border: 1px solid rgba(66, 133, 244, 0.5);
+    color: white;
+    padding: 0.5em 1.2em;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: background 0.15s;
+}
+
+.gmail-connect-btn:hover {
+    background: rgba(66, 133, 244, 0.5);
+}
+
+.gmail-empty {
+    text-align: center;
+    opacity: 0.6;
+    padding: 1em;
+}
+
+.gmail-empty a {
+    color: #4285f4;
+}
+
+.gmail-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    opacity: 0.5;
 }

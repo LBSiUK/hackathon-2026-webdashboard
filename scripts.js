@@ -457,6 +457,198 @@ function renderTiles() {
                     loadRss(true);
                 });
             }
+            const chatPlaceholder = tile.querySelector('[data-chat-placeholder]');
+            if (chatPlaceholder) {
+                const messagesEl = chatPlaceholder.querySelector('.chat-messages');
+                const inputEl = chatPlaceholder.querySelector('.chat-input');
+                const sendBtn = chatPlaceholder.querySelector('.chat-send');
+                if (messagesEl && inputEl && sendBtn) {
+                    const CHAT_STORAGE_KEY = 'dashboard_chat_history';
+                    const CHAT_SUMMARY_THRESHOLD = 12;
+                    const CHAT_RECENT_COUNT = 6;
+
+                    function loadChatState() {
+                        try {
+                            const raw = localStorage.getItem(CHAT_STORAGE_KEY);
+                            if (!raw) return { history: [], summary: '' };
+                            const data = JSON.parse(raw);
+                            return {
+                                history: Array.isArray(data.history) ? data.history : [],
+                                summary: typeof data.summary === 'string' ? data.summary : ''
+                            };
+                        } catch (e) {
+                            return { history: [], summary: '' };
+                        }
+                    }
+                    function saveChatState(history, summary) {
+                        try {
+                            localStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify({ history, summary: summary || '' }));
+                        } catch (e) {}
+                    }
+
+                    const state = loadChatState();
+                    if (state.history.length > 0) {
+                        messagesEl.innerHTML = '';
+                        state.history.forEach(({ role, content }) => {
+                            const div = document.createElement('div');
+                            div.className = 'chat-msg ' + (role === 'user' ? 'user' : 'bot');
+                            const span = document.createElement('span');
+                            span.textContent = content;
+                            div.appendChild(span);
+                            messagesEl.appendChild(div);
+                        });
+                    } else {
+                        messagesEl.innerHTML = '<div class="chat-msg bot"><span>Hello. How can I help you today?</span></div>';
+                    }
+                    inputEl.disabled = false;
+                    sendBtn.disabled = false;
+
+                    let conversationSummary = state.summary;
+                    const chatApi = '/chat';
+                    const calendarEventApi = '/calendar/event';
+
+                    function getHistoryFromDom() {
+                        const msgDivs = messagesEl.querySelectorAll('.chat-msg');
+                        return Array.from(msgDivs).map((div) => ({
+                            role: div.classList.contains('user') ? 'user' : 'assistant',
+                            content: (div.querySelector('span') || div).textContent.trim()
+                        }));
+                    }
+                    function buildMessagesForApi() {
+                        const raw = getHistoryFromDom();
+                        let i = 0;
+                        while (i < raw.length && raw[i].role === 'assistant') i++;
+                        const fromUser = raw.slice(i);
+                        return fromUser.length > 10 ? fromUser.slice(-10) : fromUser;
+                    }
+                    function appendMsg(role, text) {
+                        const div = document.createElement('div');
+                        div.className = 'chat-msg ' + (role === 'user' ? 'user' : 'bot');
+                        const span = document.createElement('span');
+                        span.textContent = text;
+                        div.appendChild(span);
+                        messagesEl.appendChild(div);
+                        messagesEl.scrollTop = messagesEl.scrollHeight;
+                    }
+
+                    async function requestSummary(messagesToSummarize) {
+                        const text = messagesToSummarize.map((m) => (m.role === 'user' ? 'User' : 'Assistant') + ': ' + m.content).join('\n');
+                        const res = await fetch(chatApi, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                messages: [{
+                                    role: 'user',
+                                    content: 'Summarize the following conversation in 2–4 sentences. Preserve key facts and decisions.\n\nConversation:\n' + text
+                                }]
+                            })
+                        });
+                        if (!res.ok) return '';
+                        const data = await res.json();
+                        return (data.content || '').trim();
+                    }
+
+                    async function sendMessage() {
+                        const text = (inputEl.value || '').trim();
+                        if (!text) return;
+                        inputEl.value = '';
+                        inputEl.disabled = true;
+                        sendBtn.disabled = true;
+                        appendMsg('user', text);
+
+                        const fullHistory = getHistoryFromDom();
+                        let i = 0;
+                        while (i < fullHistory.length && fullHistory[i].role === 'assistant') i++;
+                        const fromUser = fullHistory.slice(i);
+
+                        if (fromUser.length > CHAT_SUMMARY_THRESHOLD) {
+                            const toSummarize = fromUser.slice(0, -CHAT_RECENT_COUNT);
+                            if (toSummarize.length > 0) {
+                                try {
+                                    conversationSummary = await requestSummary(toSummarize);
+                                } catch (e) {
+                                    console.error('Summary request failed', e);
+                                }
+                            }
+                        }
+
+                        const messages = buildMessagesForApi();
+                        let botContent = 'Sorry, I could not get a response.';
+                        try {
+                            const res = await fetch(chatApi, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ messages })
+                            });
+                            if (res.ok) {
+                                const data = await res.json();
+                                botContent = (data.content || '').trim() || botContent;
+                            } else {
+                                const errBody = await res.text();
+                                let errDetail = errBody;
+                                try {
+                                    const errJson = JSON.parse(errBody);
+                                    errDetail = errJson.detail || errBody;
+                                } catch (_) {}
+                                botContent = 'Error ' + res.status + ': ' + (errDetail || res.statusText);
+                            }
+                        } catch (e) {
+                            console.error('Chat request failed', e);
+                            botContent = 'Request failed: ' + (e.message || String(e));
+                        }
+
+                        const calPrefix = 'CALENDAR_ACTION:';
+                        const calIdx = botContent.indexOf(calPrefix);
+                        if (calIdx !== -1) {
+                            const braceStart = botContent.indexOf('{', calIdx + calPrefix.length);
+                            if (braceStart !== -1) {
+                                let depth = 0, braceEnd = -1;
+                                for (let i = braceStart; i < botContent.length; i++) {
+                                    if (botContent[i] === '{') depth++;
+                                    else if (botContent[i] === '}') { depth--; if (depth === 0) { braceEnd = i; break; } }
+                                }
+                                if (braceEnd !== -1) {
+                                    try {
+                                        const payload = JSON.parse(botContent.slice(braceStart, braceEnd + 1));
+                                        const createRes = await fetch(calendarEventApi, {
+                                            method: 'POST',
+                                            headers: { 'Content-Type': 'application/json' },
+                                            body: JSON.stringify({
+                                                summary: payload.summary || '',
+                                                start: payload.start || '',
+                                                end: payload.end || '',
+                                                description: payload.description || ''
+                                            })
+                                        });
+                                        if (createRes.ok) {
+                                            botContent = (botContent.slice(0, calIdx).trim() + '\n' + botContent.slice(braceEnd + 1).trim()).trim();
+                                            if (!botContent) botContent = "I've added that to your calendar.";
+                                        } else {
+                                            const errData = await createRes.text();
+                                            let errMsg = errData;
+                                            try { const j = JSON.parse(errData); errMsg = j.detail || errMsg; } catch (_) {}
+                                            botContent = (botContent.slice(0, calIdx).trim() + '\n' + botContent.slice(braceEnd + 1).trim()).trim() || "I tried to add that event.";
+                                            botContent += " (Calendar: " + errMsg + ")";
+                                        }
+                                    } catch (parseErr) {
+                                        console.error('Calendar action parse failed', parseErr);
+                                        botContent = botContent.slice(0, calIdx).trim() + botContent.slice(braceEnd + 1).trim();
+                                    }
+                                }
+                            }
+                        }
+                        appendMsg('bot', botContent);
+
+                        const savedHistory = getHistoryFromDom();
+                        saveChatState(savedHistory, conversationSummary);
+                        inputEl.disabled = false;
+                        sendBtn.disabled = false;
+                        inputEl.focus();
+                    }
+                    sendBtn.addEventListener('click', sendMessage);
+                    inputEl.addEventListener('keydown', (e) => { if (e.key === 'Enter') sendMessage(); });
+                }
+            }
             const weatherEl = tile.querySelector('[data-weather]');
             if (weatherEl) {
                 const backendWeather = 'http://localhost:5020/weather';
@@ -540,7 +732,388 @@ function renderTiles() {
                 })();
                 weatherEl.parentNode.replaceChild(wrapper, weatherEl);
             }
-            if (id === '3') {
+            const spotifyEl = tile.querySelector('[data-spotify-widget]');
+            if (spotifyEl) {
+                const spotifyAuth = '/auth/spotify';
+                const spotifyStatusUrl = '/spotify/status';
+                const spotifyTokenUrl = '/spotify/token';
+                function escapeHtml(s) {
+                    const div = document.createElement('div');
+                    div.textContent = s || '';
+                    return div.innerHTML;
+                }
+                function createSpotifyPlayer(container, authUrl, tokenUrl, esc) {
+                    const tokenPromise = () => fetch(tokenUrl).then(r => r.json()).then(d => d.access_token);
+                    const player = new window.Spotify.Player({
+                        name: 'Dashboard',
+                        getOAuthToken: function(cb) { tokenPromise().then(cb); },
+                        volume: 0.5
+                    });
+                    const nowPlayingUrl = '/spotify/now-playing';
+                    const devicesUrl = '/spotify/devices';
+                    const transferUrl = '/spotify/transfer';
+                    const playUrl = '/spotify/play';
+                    const pauseUrl = '/spotify/pause';
+                    const nextUrl = '/spotify/next';
+                    const prevUrl = '/spotify/previous';
+                    const volumeUrl = '/spotify/volume';
+                    const svgPrev = '<svg viewBox="0 0 24 24" fill="currentColor" width="22" height="22"><path d="M6 6h2v12H6V6zm3.5 6l8.5 6V6l-8.5 6z"/></svg>';
+                    const svgNext = '<svg viewBox="0 0 24 24" fill="currentColor" width="22" height="22"><path d="M6 18l8.5-6L6 6v12zm2.5-6l5 3.5V8.5l-5 3.5zM16 6h2v12h-2V6z"/></svg>';
+                    const svgPlay = '<svg viewBox="0 0 24 24" fill="currentColor" width="28" height="28"><path d="M8 5v14l11-7L8 5z"/></svg>';
+                    const svgPause = '<svg viewBox="0 0 24 24" fill="currentColor" width="28" height="28"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>';
+                    const ui = document.createElement('div');
+                    ui.className = 'spotify-player-ui';
+                    ui.innerHTML = '<div class="spotify-glass spotify-now-playing-card">' +
+                        '<div class="spotify-art-wrap"><img src="" alt="" class="spotify-art"></div>' +
+                        '<div class="spotify-track-info"><span class="spotify-track-name">—</span><span class="spotify-artist-name">—</span></div>' +
+                        '</div>' +
+                        '<div class="spotify-glass spotify-progress-row">' +
+                        '<span class="spotify-time-elapsed">0:00</span>' +
+                        '<input type="range" class="spotify-progress" min="0" max="100" value="0" aria-label="Progress">' +
+                        '<span class="spotify-time-total">0:00</span>' +
+                        '</div>' +
+                        '<div class="spotify-glass spotify-controls">' +
+                        '<button type="button" class="spotify-btn spotify-prev" aria-label="Previous">' + svgPrev + '</button>' +
+                        '<button type="button" class="spotify-btn spotify-play spotify-play-accent" aria-label="Play">' + svgPlay + '</button>' +
+                        '<button type="button" class="spotify-btn spotify-next" aria-label="Next">' + svgNext + '</button>' +
+                        '</div>' +
+                        '<div class="spotify-glass spotify-volume-row">' +
+                        '<svg class="spotify-vol-icon" viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg>' +
+                        '<input type="range" class="spotify-volume" min="0" max="100" value="50" aria-label="Volume">' +
+                        '</div>' +
+                        '<div class="spotify-glass spotify-device-row"><label class="spotify-device-label">Play on</label><select class="spotify-device-select" aria-label="Device"><option value="">Loading…</option></select></div>' +
+                        '<a href="https://open.spotify.com" target="_blank" rel="noopener" class="spotify-open-link">Open Spotify</a>';
+                    container.innerHTML = '';
+                    container.appendChild(ui);
+                    const artEl = ui.querySelector('.spotify-art');
+                    const trackName = ui.querySelector('.spotify-track-name');
+                    const artistName = ui.querySelector('.spotify-artist-name');
+                    const playBtn = ui.querySelector('.spotify-play');
+                    const volSlider = ui.querySelector('.spotify-volume');
+                    const deviceSelect = ui.querySelector('.spotify-device-select');
+                    const progressBar = ui.querySelector('.spotify-progress');
+                    const timeElapsed = ui.querySelector('.spotify-time-elapsed');
+                    const timeTotal = ui.querySelector('.spotify-time-total');
+                    function formatTime(ms) {
+                        if (ms == null || isNaN(ms) || ms < 0) return '0:00';
+                        const s = Math.floor(ms / 1000);
+                        const m = Math.floor(s / 60);
+                        const sec = s % 60;
+                        return m + ':' + (sec < 10 ? '0' : '') + sec;
+                    }
+                    async function loadDevices() {
+                        try {
+                            const r = await fetch(devicesUrl);
+                            let data = {};
+                            try { if (r.ok) data = await r.json(); } catch (_) {}
+                            const devices = Array.isArray(data.devices) ? data.devices : [];
+                            const activeId = devices.find(d => d.is_active)?.id || '';
+                            if (devices.length) {
+                                deviceSelect.innerHTML = devices.map(d => '<option value="' + esc(d.id) + '"' + (d.id === activeId ? ' selected' : '') + '>' + esc(d.name) + (d.type ? ' (' + esc(d.type) + ')' : '') + (d.is_active ? ' ●' : '') + '</option>').join('');
+                                deviceSelect.disabled = false;
+                            } else {
+                                const msg = r.status === 401 ? 'Reconnect Spotify' : 'No devices found';
+                                deviceSelect.innerHTML = '<option value="">' + msg + '</option>';
+                                deviceSelect.disabled = true;
+                            }
+                        } catch (e) {
+                            deviceSelect.innerHTML = '<option value="">No devices</option>';
+                            deviceSelect.disabled = true;
+                        }
+                    }
+                    deviceSelect.addEventListener('change', function() {
+                        const id = deviceSelect.value;
+                        if (!id) return;
+                        fetch(transferUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ device_id: id }) }).then(function() { loadDevices(); }).catch(function() {});
+                    });
+                    loadDevices();
+                    setInterval(loadDevices, 8000);
+                    function updateFromNowPlaying(data) {
+                        if (data && data.playing) {
+                            trackName.textContent = data.name || '—';
+                            artistName.textContent = data.artist_str || '—';
+                            if (data.image_url) {
+                                artEl.src = data.image_url;
+                                artEl.style.display = '';
+                            } else {
+                                artEl.style.display = 'none';
+                            }
+                            const dur = data.duration_ms || 0;
+                            const prog = data.progress_ms != null ? data.progress_ms : 0;
+                            progressBar.max = dur || 1;
+                            progressBar.value = Math.min(prog, dur || 1);
+                            timeElapsed.textContent = formatTime(prog);
+                            timeTotal.textContent = formatTime(dur);
+                            setPlaying(true);
+                        } else {
+                            trackName.textContent = data && data.message ? data.message : 'Nothing playing';
+                            artistName.textContent = 'Play on any device to see it here';
+                            artEl.style.display = 'none';
+                            progressBar.value = 0;
+                            progressBar.max = 100;
+                            timeElapsed.textContent = '0:00';
+                            timeTotal.textContent = '0:00';
+                            setPlaying(false);
+                        }
+                    }
+                    async function pollNowPlaying() {
+                        try {
+                            const r = await fetch(nowPlayingUrl);
+                            if (r.ok) { const data = await r.json(); updateFromNowPlaying(data); }
+                        } catch (e) {}
+                    }
+                    pollNowPlaying();
+                    setInterval(pollNowPlaying, 3000);
+                    function updateTrack(track) {
+                        if (track) {
+                            trackName.textContent = track.name || '—';
+                            artistName.textContent = (track.artists && track.artists.map(a => a.name).join(', ')) || '—';
+                            if (track.album && track.album.images && track.album.images[0]) {
+                                artEl.src = track.album.images[0].url;
+                                artEl.style.display = '';
+                            }
+                        }
+                    }
+                    function setPlaying(playing) {
+                        playBtn.innerHTML = playing ? svgPause : svgPlay;
+                        playBtn.setAttribute('aria-label', playing ? 'Pause' : 'Play');
+                    }
+                    player.addListener('ready', function() { loadDevices(); });
+                    player.addListener('player_state_changed', function(state) {
+                        if (state) {
+                            setPlaying(!state.paused);
+                            if (state.track_window && state.track_window.current_track) updateTrack(state.track_window.current_track);
+                        }
+                    });
+                    playBtn.addEventListener('click', function() {
+                        const isPaused = playBtn.getAttribute('aria-label') === 'Play';
+                        fetch(isPaused ? playUrl : pauseUrl, { method: 'POST' })
+                            .then(function() { setTimeout(pollNowPlaying, 300); })
+                            .catch(function() {});
+                        if (isPaused) setPlaying(true); else setPlaying(false);
+                    });
+                    ui.querySelector('.spotify-prev').addEventListener('click', function() {
+                        fetch(prevUrl, { method: 'POST' }).then(function() { setTimeout(pollNowPlaying, 400); }).catch(function() {});
+                    });
+                    ui.querySelector('.spotify-next').addEventListener('click', function() {
+                        fetch(nextUrl, { method: 'POST' }).then(function() { setTimeout(pollNowPlaying, 400); }).catch(function() {});
+                    });
+                    volSlider.addEventListener('input', function() {
+                        const pct = parseInt(volSlider.value, 10);
+                        fetch(volumeUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ volume_percent: pct }) }).catch(function() {});
+                        if (player._options) player.setVolume(pct / 100);
+                    });
+                    player.addListener('not_ready', function() { trackName.textContent = 'Device not ready'; });
+                    player.connect();
+                }
+                async function initSpotifyWidget() {
+                    try {
+                        const statusRes = await fetch(spotifyStatusUrl);
+                        const status = await statusRes.json();
+                        if (!status.connected) {
+                            spotifyEl.innerHTML = '<div class="spotify-connect"><span class="spotify-label">Spotify</span><p class="spotify-hint">Connect your account to control playback from this dashboard (play/pause, volume). Requires Spotify Premium.</p><a href="' + spotifyAuth + '" class="spotify-connect-btn">Connect with Spotify</a></div>';
+                            return;
+                        }
+                        if (!window.Spotify) {
+                            spotifyEl.innerHTML = '<div class="spotify-connect"><span class="spotify-label">Spotify</span><p class="spotify-hint">Loading player...</p></div>';
+                            window.onSpotifyWebPlaybackSDKReady = function() { createSpotifyPlayer(spotifyEl, spotifyAuth, spotifyTokenUrl, escapeHtml); };
+                            return;
+                        }
+                        createSpotifyPlayer(spotifyEl, spotifyAuth, spotifyTokenUrl, escapeHtml);
+                    } catch (e) {
+                        console.error('Spotify widget error', e);
+                        spotifyEl.innerHTML = '<div class="spotify-connect"><span class="spotify-label">Spotify</span><a href="' + spotifyAuth + '" class="spotify-connect-btn">Connect with Spotify</a></div>';
+                    }
+                }
+                initSpotifyWidget();
+            }
+
+            // --- Gmail Widget ---
+            const gmailEl = tile.querySelector('[data-gmail-widget]');
+            if (gmailEl) {
+                const gmailBaseUrl = 'http://localhost:5020';
+                const ui = gmailEl;
+
+                function truncate(str, len) { return str.length > len ? str.slice(0, len) + '…' : str; }
+
+                function renderGmailWidget(emails, composing) {
+                    if (composing) return;
+                    let html = '<div class="gmail-header"><span class="gmail-title">Inbox</span>' +
+                        '<button type="button" class="gmail-btn gmail-refresh-btn" aria-label="Refresh">↻</button>' +
+                        '<button type="button" class="gmail-btn gmail-compose-btn" aria-label="Compose">✉ Compose</button>' +
+                        '</div>';
+                    if (!emails || emails.length === 0) {
+                        html += '<div class="gmail-empty">No emails found. <a href="' + gmailBaseUrl + '/auth/google">Connect Google</a></div>';
+                    } else {
+                        html += '<div class="gmail-list">';
+                        emails.forEach(function(em) {
+                            var fromName = em.from || 'Unknown';
+                            var match = fromName.match(/^([^<]+)/);
+                            if (match) fromName = match[1].trim();
+                            html += '<div class="gmail-email-card" data-email-id="' + em.id + '">' +
+                                '<div class="gmail-email-from">' + escapeHtml(truncate(fromName, 30)) + '</div>' +
+                                '<div class="gmail-email-subject">' + escapeHtml(truncate(em.subject || '(No subject)', 50)) + '</div>' +
+                                '<div class="gmail-email-snippet">' + escapeHtml(truncate(em.snippet || '', 80)) + '</div>' +
+                                '<div class="gmail-email-date">' + escapeHtml(em.date || '') + '</div>' +
+                                '</div>';
+                        });
+                        html += '</div>';
+                    }
+                    html += '<div class="gmail-summary-area"></div>';
+                    ui.innerHTML = html;
+
+                    ui.querySelector('.gmail-refresh-btn').addEventListener('click', loadEmails);
+                    ui.querySelector('.gmail-compose-btn').addEventListener('click', showComposeForm);
+
+                    ui.querySelectorAll('.gmail-email-card').forEach(function(card) {
+                        card.addEventListener('click', function() {
+                            var emailId = card.getAttribute('data-email-id');
+                            var email = (cachedEmails || []).find(function(e) { return e.id === emailId; });
+                            if (email) showEmailDetail(email);
+                        });
+                    });
+                }
+
+                var cachedEmails = [];
+                var isComposing = false;
+
+                function showEmailDetail(email) {
+                    var html = '<div class="gmail-detail">' +
+                        '<button type="button" class="gmail-btn gmail-back-btn">← Back</button>' +
+                        '<div class="gmail-detail-subject">' + escapeHtml(email.subject || '(No subject)') + '</div>' +
+                        '<div class="gmail-detail-meta">From: ' + escapeHtml(email.from || '') + '</div>' +
+                        '<div class="gmail-detail-meta">Date: ' + escapeHtml(email.date || '') + '</div>' +
+                        '<div class="gmail-detail-body">' + escapeHtml(email.body || email.snippet || '').replace(/\n/g, '<br>') + '</div>' +
+                        '<div class="gmail-detail-actions">' +
+                        '<button type="button" class="gmail-btn gmail-summarize-btn">Summarize with AI</button>' +
+                        '<button type="button" class="gmail-btn gmail-reply-btn">Reply</button>' +
+                        '</div>' +
+                        '<div class="gmail-ai-result"></div>' +
+                        '</div>';
+                    ui.innerHTML = html;
+                    ui.querySelector('.gmail-back-btn').addEventListener('click', function() { renderGmailWidget(cachedEmails, false); });
+                    ui.querySelector('.gmail-summarize-btn').addEventListener('click', function() {
+                        var resultDiv = ui.querySelector('.gmail-ai-result');
+                        resultDiv.innerHTML = '<div class="gmail-loading">Summarizing...</div>';
+                        fetch(gmailBaseUrl + '/chat', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ messages: [
+                                { role: 'user', content: 'Summarize this email concisely in 2-3 sentences. Include key action items if any.\n\nFrom: ' + email.from + '\nSubject: ' + email.subject + '\n\n' + (email.body || email.snippet) }
+                            ]})
+                        })
+                        .then(function(r) { return r.json(); })
+                        .then(function(data) { resultDiv.innerHTML = '<div class="gmail-ai-summary">' + escapeHtml(data.content || 'No summary.') + '</div>'; })
+                        .catch(function(e) { resultDiv.innerHTML = '<div class="gmail-error">Failed to summarize.</div>'; });
+                    });
+                    ui.querySelector('.gmail-reply-btn').addEventListener('click', function() {
+                        showComposeForm(email);
+                    });
+                }
+
+                function showComposeForm(replyTo) {
+                    isComposing = true;
+                    var toVal = '';
+                    var subjectVal = '';
+                    if (replyTo && replyTo.from) {
+                        var emailMatch = replyTo.from.match(/<([^>]+)>/);
+                        toVal = emailMatch ? emailMatch[1] : replyTo.from;
+                        subjectVal = 'Re: ' + (replyTo.subject || '');
+                    }
+                    var html = '<div class="gmail-compose">' +
+                        '<button type="button" class="gmail-btn gmail-back-btn">← Back</button>' +
+                        '<div class="gmail-compose-title">' + (replyTo ? 'Reply' : 'New Email') + '</div>' +
+                        '<input type="email" class="gmail-input gmail-to" placeholder="To" value="' + escapeHtml(toVal) + '">' +
+                        '<input type="text" class="gmail-input gmail-subject" placeholder="Subject" value="' + escapeHtml(subjectVal) + '">' +
+                        '<textarea class="gmail-textarea gmail-body" placeholder="Write your message..." rows="4"></textarea>' +
+                        '<div class="gmail-compose-actions">' +
+                        '<button type="button" class="gmail-btn gmail-ai-draft-btn">Draft with AI</button>' +
+                        '<button type="button" class="gmail-btn gmail-send-btn">Send</button>' +
+                        '</div>' +
+                        '<div class="gmail-compose-status"></div>' +
+                        '</div>';
+                    ui.innerHTML = html;
+
+                    ui.querySelector('.gmail-back-btn').addEventListener('click', function() {
+                        isComposing = false;
+                        renderGmailWidget(cachedEmails, false);
+                    });
+
+                    ui.querySelector('.gmail-ai-draft-btn').addEventListener('click', function() {
+                        var toField = ui.querySelector('.gmail-to').value;
+                        var subjectField = ui.querySelector('.gmail-subject').value;
+                        var bodyField = ui.querySelector('.gmail-body');
+                        var statusDiv = ui.querySelector('.gmail-compose-status');
+                        var context = replyTo ? 'You are replying to an email.\nOriginal from: ' + replyTo.from + '\nOriginal subject: ' + replyTo.subject + '\nOriginal body: ' + (replyTo.body || replyTo.snippet || '').slice(0, 1000) + '\n\n' : '';
+                        statusDiv.innerHTML = '<div class="gmail-loading">Drafting...</div>';
+                        fetch(gmailBaseUrl + '/chat', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ messages: [
+                                { role: 'user', content: context + 'Draft a professional email reply. To: ' + toField + '. Subject: ' + subjectField + '. ' + (bodyField.value ? 'My notes: ' + bodyField.value : 'Write an appropriate response.') + '\n\nReturn ONLY the email body text, no subject line or greeting format instructions.' }
+                            ]})
+                        })
+                        .then(function(r) { return r.json(); })
+                        .then(function(data) {
+                            bodyField.value = data.content || '';
+                            statusDiv.innerHTML = '<div class="gmail-success">Draft ready — review and send.</div>';
+                        })
+                        .catch(function() { statusDiv.innerHTML = '<div class="gmail-error">Failed to draft.</div>'; });
+                    });
+
+                    ui.querySelector('.gmail-send-btn').addEventListener('click', function() {
+                        var to = ui.querySelector('.gmail-to').value.trim();
+                        var subject = ui.querySelector('.gmail-subject').value.trim();
+                        var body = ui.querySelector('.gmail-body').value.trim();
+                        var statusDiv = ui.querySelector('.gmail-compose-status');
+                        if (!to || !subject || !body) {
+                            statusDiv.innerHTML = '<div class="gmail-error">Fill in all fields.</div>';
+                            return;
+                        }
+                        statusDiv.innerHTML = '<div class="gmail-loading">Sending...</div>';
+                        fetch(gmailBaseUrl + '/gmail/send', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ to: to, subject: subject, body: body })
+                        })
+                        .then(function(r) {
+                            if (!r.ok) throw new Error('Send failed');
+                            return r.json();
+                        })
+                        .then(function() {
+                            statusDiv.innerHTML = '<div class="gmail-success">Email sent!</div>';
+                            setTimeout(function() { isComposing = false; loadEmails(); }, 1500);
+                        })
+                        .catch(function() { statusDiv.innerHTML = '<div class="gmail-error">Failed to send email.</div>'; });
+                    });
+                }
+
+                function loadEmails() {
+                    if (isComposing) return;
+                    fetch(gmailBaseUrl + '/gmail/recent?count=3')
+                        .then(function(r) {
+                            if (r.status === 401) {
+                                ui.innerHTML = '<div class="gmail-connect"><span>Gmail</span><a href="' + gmailBaseUrl + '/auth/google" class="gmail-connect-btn">Connect Google Account</a></div>';
+                                return null;
+                            }
+                            return r.json();
+                        })
+                        .then(function(data) {
+                            if (!data) return;
+                            cachedEmails = data.emails || [];
+                            renderGmailWidget(cachedEmails, isComposing);
+                        })
+                        .catch(function(e) {
+                            console.error('Gmail load error', e);
+                            ui.innerHTML = '<div class="gmail-error">Could not load emails.</div>';
+                        });
+                }
+
+                loadEmails();
+                setInterval(function() { if (!isComposing) loadEmails(); }, 60000);
+            }
+
+            if (id === '3' && !item.getAttribute('data-calendar-embed')) {
                 const calWrapper = document.createElement('div');
                 calWrapper.style.cssText = 'display:flex; flex-direction:column; height:100%;';
                 const calHeader = document.createElement('div');

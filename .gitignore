@@ -1,0 +1,11 @@
+# WhatsApp bot
+node_modules/
+wwebjs_auth/
+baileys_auth/
+whatsapp-qr.png
+whatsapp_llm.db
+
+# Env and cache
+.env
+__pycache__/
+*.pyc

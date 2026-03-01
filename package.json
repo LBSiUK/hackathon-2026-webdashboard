@@ -1,0 +1,22 @@
+{
+  "name": "dashboard-whatsapp-bot",
+  "version": "1.0.0",
+  "description": "WhatsApp bot with LLM (Baileys + Vercel AI SDK + SQLite threads)",
+  "main": "whatsapp-llm-gateway.js",
+  "type": "module",
+  "scripts": {
+    "whatsapp": "node whatsapp-bot.js",
+    "whatsapp:llm": "node whatsapp-llm-gateway.js",
+    "whatsapp:logout": "node scripts/logout-whatsapp.js",
+    "postinstall": "node scripts/patch-baileys.js"
+  },
+  "dependencies": {
+    "@ai-sdk/openai": "^1.0.0",
+    "@whiskeysockets/baileys": "^6.7.0",
+    "ai": "^4.0.0",
+    "better-sqlite3": "^11.0.0",
+    "dotenv": "^16.6.1",
+    "qrcode": "^1.5.3",
+    "whatsapp-web.js": "^1.23.0"
+  }
+}

@@ -35,9 +35,26 @@
         ]]>
     </item>
 
-    <item id="3" label="Today's calendar events" locations="{C,0}, {C,1}, {D,0}, {D,1}" type="content" />
-    <item id="10" label="How do I use this terminal?" locations="{D,4}" link="howitsmade.html"/>
-    <item id="10" label="Settings" locations="{D,5}" type="menu" link="settings.html" />
+    <item id="3" label="Calendar" locations="{C,0}, {C,1}, {D,0}, {D,1}" type="content" data-class="calendar-embed-tile" data-calendar-embed="true">
+        <![CDATA[
+        <div class="calendar-embed-wrap">
+            <iframe src="https://calendar.google.com/calendar/embed?src=sam.poplett15%40gmail.com&amp;ctz=Europe%2FLondon" style="border: 0" width="100%" height="100%" frameborder="0" scrolling="no" title="Calendar"></iframe>
+        </div>
+        ]]>
+    </item>
+    <item id="gmail" label="Gmail" locations="{D,4}, {D,5}" type="content" data-class="gmail-tile">
+        <![CDATA[
+        <div class="gmail-widget" data-gmail-widget>
+            <div class="gmail-placeholder">Loading Gmail...</div>
+        </div>
+        ]]>
+    </item>
 
-    <item id="6" label="Today's tasks" locations="{C,2}, {C,3}, {D,2}, {D,3}" type="content" />
+    <item id="spotify" label="Spotify" locations="{C,2}, {C,3}, {D,2}, {D,3}" type="content" data-class="spotify-tile">
+        <![CDATA[
+        <div class="spotify-widget" data-spotify-widget>
+            <div class="spotify-placeholder">Loading...</div>
+        </div>
+        ]]>
+    </item>
 </layout>
