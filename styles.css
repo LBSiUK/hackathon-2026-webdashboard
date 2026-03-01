@@ -299,6 +299,96 @@ body {
     color: black;
 }
 
+.weather-tile.content-tile {
+    padding: 0;
+}
+
+.weather-widget {
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+}
+
+.weather-widget__section {
+    flex: 0 0 50%;
+    min-height: 0;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.25);
+}
+
+.weather-widget__section:last-child {
+    border-bottom: none;
+}
+
+.weather-widget__header {
+    flex: 0 0 auto;
+    padding: 4px 0;
+    padding-left: 0;
+    font-weight: 600;
+    font-size: 1.15em;
+    text-align: left;
+}
+
+.weather-widget__header--top {
+    padding-top: 0;
+}
+
+.weather-widget__scroll-row {
+    flex: 1;
+    display: flex;
+    align-items: stretch;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.weather-widget__scroll-area {
+    flex: 1;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-behavior: smooth;
+    display: flex;
+    gap: 8px;
+    padding: 0;
+    align-items: stretch;
+}
+
+.weather-widget__card {
+    flex: 0 0 auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    text-align: center;
+    background: var(--theme-card-bg);
+    min-height: 0;
+    box-sizing: border-box;
+}
+
+.weather-widget__card--hourly {
+    width: 64px;
+}
+
+.weather-widget__card--daily {
+    width: 80px;
+}
+
+.weather-widget__arrow-btn {
+    flex: 0 0 48px;
+    min-height: 0;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+}
+
 .nav-arrow,
 .menu-icon {
     position: absolute;
