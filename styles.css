@@ -369,6 +369,7 @@ body {
     border-right: 2px solid rgba(255, 255, 255, 0.3);
     box-sizing: border-box;
     padding: 8px 6px 6px;
+    font-size: calc(var(--tile-size) * 0.115);
 }
 
 .weather-widget__line {
