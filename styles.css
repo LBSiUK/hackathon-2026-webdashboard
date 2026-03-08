@@ -339,8 +339,17 @@ body {
     pointer-events: none;
 }
 
-.weather-widget__scroll-area {
+.weather-widget__scroll-row {
     width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: stretch;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.weather-widget__scroll-area {
+    flex: 1;
     height: 100%;
     overflow-x: auto;
     overflow-y: hidden;
@@ -357,6 +366,26 @@ body {
     display: none;
 }
 
+.weather-widget__arrow-btn {
+    flex: 0 0 auto;
+    width: 72px;
+    height: 100%;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    color: inherit;
+    font-size: 2.4em;
+    opacity: 0.85;
+}
+
+.weather-widget__arrow-btn:hover {
+    opacity: 1;
+}
+
 .weather-widget__card {
     flex: 0 0 auto;
     height: 100%;
@@ -369,7 +398,7 @@ body {
     border-right: 2px solid rgba(255, 255, 255, 0.3);
     box-sizing: border-box;
     padding: 8px 6px 6px;
-    font-size: calc(var(--tile-size) * 0.115);
+    font-size: calc(var(--tile-size) * 0.08);
 }
 
 .weather-widget__line {

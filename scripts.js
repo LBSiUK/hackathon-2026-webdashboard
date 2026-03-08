@@ -480,12 +480,33 @@ function renderTiles() {
                     const header = document.createElement('div');
                     header.className = 'weather-widget__label';
                     header.textContent = titleText;
+                    const scrollRow = document.createElement('div');
+                    scrollRow.className = 'weather-widget__scroll-row';
+                    const leftBtn = document.createElement('button');
+                    leftBtn.type = 'button';
+                    leftBtn.className = 'weather-widget__arrow-btn';
+                    leftBtn.style.visibility = 'hidden';
+                    leftBtn.innerHTML = '<i class="fa-regular fa-circle-left"></i>';
                     const scrollArea = document.createElement('div');
                     scrollArea.className = 'weather-widget__scroll-area';
+                    const rightBtn = document.createElement('button');
+                    rightBtn.type = 'button';
+                    rightBtn.className = 'weather-widget__arrow-btn';
+                    rightBtn.innerHTML = '<i class="fa-regular fa-circle-right"></i>';
+                    const updateArrows = () => {
+                        leftBtn.style.visibility = scrollArea.scrollLeft <= 10 ? 'hidden' : 'visible';
+                        rightBtn.style.visibility = scrollArea.scrollLeft + scrollArea.clientWidth >= scrollArea.scrollWidth - 10 ? 'hidden' : 'visible';
+                    };
+                    scrollArea.addEventListener('scroll', updateArrows);
+                    leftBtn.onclick = () => { scrollArea.scrollLeft -= scrollArea.clientWidth * 0.85; };
+                    rightBtn.onclick = () => { scrollArea.scrollLeft += scrollArea.clientWidth * 0.85; };
+                    scrollRow.appendChild(leftBtn);
+                    scrollRow.appendChild(scrollArea);
+                    scrollRow.appendChild(rightBtn);
                     section.appendChild(header);
-                    section.appendChild(scrollArea);
+                    section.appendChild(scrollRow);
                     wrapper.appendChild(section);
-                    return { section, scrollArea, header };
+                    return { section, scrollArea, header, updateArrows };
                 };
                 const hourlySection = scrollSection('Next 24 hours');
                 const dailySection = scrollSection('2-week forecast');
@@ -510,6 +531,7 @@ function renderTiles() {
                         card.innerHTML = `<div class="weather-widget__line weather-widget__line--time">${timeStr}</div><div class="weather-widget__line weather-widget__line--temp">${temps[i] != null ? Math.round(temps[i]) + '°' : '-'}</div><div class="weather-widget__line weather-widget__line--desc">${weatherCodeLabel(codes[i] || 0)}</div>`;
                         hourlySection.scrollArea.appendChild(card);
                     }
+                    hourlySection.updateArrows();
                     if (data.daily) {
                         const d = data.daily;
                         const days = d.time || [];
@@ -526,6 +548,7 @@ function renderTiles() {
                             card.innerHTML = `<div class="weather-widget__line weather-widget__line--time">${dayName}</div><div class="weather-widget__line weather-widget__line--temp">${maxT[i] != null ? Math.round(maxT[i]) + '°' : '-'}</div><div class="weather-widget__line weather-widget__line--min">${minT[i] != null ? Math.round(minT[i]) + '°' : '-'}</div><div class="weather-widget__line weather-widget__line--desc">${weatherCodeLabel(dCodes[i] || 0)}</div>`;
                             dailySection.scrollArea.appendChild(card);
                         }
+                        dailySection.updateArrows();
                     }
                 };
                 (async () => {
@@ -651,10 +674,11 @@ function renderTiles() {
         } else {
             if (type === 'menu') {
                 tile.classList.add('menu-tile');
-                tile.innerHTML = `
-                    <img src="images/link.png" class="menu-icon" alt="Link">
-                    <span class="tile-label">${label}</span>
-                `;
+                const iconTpl = document.getElementById('menu-tile-icon');
+                if (iconTpl && iconTpl.content) {
+                    tile.appendChild(iconTpl.content.cloneNode(true));
+                }
+                tile.insertAdjacentHTML('beforeend', `<span class="tile-label">${label}</span>`);
             } else {
                 if (!image) {
                     tile.style.backgroundColor = getRandomColor();

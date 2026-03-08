@@ -44,11 +44,29 @@ app.add_middleware(
 cache = {}
 
 CALENDAR_TOKEN_FILE = os.environ.get('CALENDAR_TOKEN_FILE', 'calendar_tokens.json')
+AUTH_STATE_FILE = os.environ.get('AUTH_STATE_FILE', 'auth_states.json')
 CALENDAR_CACHE_KEY = 'calendar_events'
 CALENDAR_REMINDERS_CACHE_KEY = 'calendar_reminders'
 CALENDAR_CACHE_TTL = 300
 SCOPES = ['https://www.googleapis.com/auth/calendar.readonly']
-_auth_states = {}
+
+
+def _load_auth_states() -> dict:
+    if not os.path.exists(AUTH_STATE_FILE):
+        return {}
+    try:
+        with open(AUTH_STATE_FILE, 'r') as f:
+            return json.load(f)
+    except Exception:
+        return {}
+
+
+def _save_auth_states(states: dict):
+    try:
+        with open(AUTH_STATE_FILE, 'w') as f:
+            json.dump(states, f)
+    except Exception:
+        pass
 
 _client_id = os.environ.get('GOOGLE_CLIENT_ID')
 _client_secret = os.environ.get('GOOGLE_CLIENT_SECRET')
@@ -78,7 +96,13 @@ def load_calendar_credentials():
             data = json.load(f)
         creds = Credentials.from_authorized_user_info(data, SCOPES)
         if creds.expired and creds.refresh_token:
-            creds.refresh(Request())
+            try:
+                creds.refresh(Request())
+                save_calendar_credentials(creds)
+            except Exception:
+                return None
+        if not creds.valid:
+            return None
         return creds
     except Exception:
         return None
@@ -170,7 +194,12 @@ async def auth_google():
     if not client_id or not client_secret:
         raise HTTPException(status_code=501, detail='Google OAuth not configured')
     state = secrets.token_urlsafe(32)
-    _auth_states[state] = time.time()
+    states = _load_auth_states()
+    # Expire any states older than 10 minutes
+    now = time.time()
+    states = {k: v for k, v in states.items() if now - v < 600}
+    states[state] = now
+    _save_auth_states(states)
     base = get_base_url()
     flow = Flow.from_client_config(
         {
@@ -197,9 +226,11 @@ async def auth_callback(
 ):
     if error:
         return RedirectResponse(url=f"{get_base_url()}/settings.html?error=" + (error or 'unknown'))
-    if not code or not state or state not in _auth_states:
-        raise HTTPException(status_code=400, detail='Invalid callback')
-    del _auth_states[state]
+    states = _load_auth_states()
+    if not code or not state or state not in states:
+        raise HTTPException(status_code=400, detail='Invalid callback — please try signing in again')
+    del states[state]
+    _save_auth_states(states)
     client_id = os.environ.get('GOOGLE_CLIENT_ID')
     client_secret = os.environ.get('GOOGLE_CLIENT_SECRET')
     if not client_id or not client_secret:
