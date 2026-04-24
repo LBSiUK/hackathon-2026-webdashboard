@@ -1,4 +1,4 @@
-Hackathon Project - Easy-to-use smart home dashboard that can be used on any touchscreen device - 24hr collaborative Hackathon Project
+Hackathon Project - Easy to use smart home dashboard that can be used on any touchscreen device - 24hr collaborative Hackathon Project
 ----------------
 This project was for a 24-hour Hackathon I did at my university.
 It provides a touch-first web interface for an easy-to-use smart screen, which can be accessed on any device with a modern-ish web browser. I recommend using an iPad for this, as it fits the display UI just about perfectly. It displays the current weather, a selectable RSS feed with news from different sources. There is also Google Calendar integration though this needs updating to fix.
