@@ -1,5 +1,6 @@
 from flask import Flask, request, Response, abort
 import requests
+import os
 import time
 from urllib.parse import urlparse
 
@@ -63,4 +64,11 @@ def proxy_page():
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    # PORT lets you move off 5000, which macOS uses for AirPlay Receiver.
+    # The Werkzeug debugger is only switched on when FLASK_DEBUG=1, because
+    # the server listens on every network interface.
+    app.run(
+        host='0.0.0.0',
+        port=int(os.environ.get('PORT', '5000')),
+        debug=os.environ.get('FLASK_DEBUG') == '1',
+    )
