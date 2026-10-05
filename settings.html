@@ -115,6 +115,8 @@
                             if (window.parent && window.parent !== window) window.parent.postMessage({ type: 'settingsChanged', setting: 'calendar' }, '*');
                         });
                     };
+                } else if (data.demo) {
+                    el.textContent = 'Demo mode: the calendar and tasks tiles show sample entries until you sign in.';
                 } else {
                     el.textContent = 'Sign in with Google to sync your calendar.';
                 }

@@ -627,16 +627,25 @@ function renderTiles() {
                             div.style.padding = '8px 0';
                             div.style.borderBottom = '1px solid var(--theme-border)';
                             const timeStr = formatEventTime(startStr);
-                            const a = document.createElement('a');
-                            a.href = link;
+                            // Demo entries have no Google link, so show them as plain text.
+                            const a = document.createElement(link.trim() ? 'a' : 'span');
+                            if (link.trim()) {
+                                a.href = link;
+                                a.target = '_blank';
+                            }
                             a.textContent = (timeStr ? timeStr + ' — ' : '') + title;
                             a.style.color = 'inherit';
                             a.style.textDecoration = 'none';
-                            a.target = '_blank';
                             div.appendChild(a);
                             calList.appendChild(div);
                         });
                         if (events.length === 0) calList.innerHTML = '<div style="opacity:0.8;">' + calendarFeed.empty + '</div>';
+                        if (doc.documentElement.getAttribute('demo') === 'true') {
+                            const note = document.createElement('div');
+                            note.textContent = 'Sample entries (demo mode)';
+                            note.style.cssText = 'font-size:0.5em; opacity:0.7; padding-top:8px;';
+                            calList.appendChild(note);
+                        }
                     } catch (e) {
                         calList.innerHTML = '<div>Could not parse calendar.</div>';
                     }

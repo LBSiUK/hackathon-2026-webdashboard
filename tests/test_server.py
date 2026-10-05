@@ -72,3 +72,13 @@ def test_callback_rejects_unknown_state(client, monkeypatch):
     monkeypatch.setenv('GOOGLE_CLIENT_SECRET', 'test-client-secret')
     r = client.get('/auth/callback', params={'code': 'abc', 'state': 'nope'})
     assert r.status_code == 400
+
+
+def test_demo_mode_serves_sample_calendar_and_tasks(client, monkeypatch):
+    monkeypatch.setenv('DEMO_MODE', '1')
+    for path in ('/calendar/events', '/calendar/reminders'):
+        r = client.get(path)
+        assert r.status_code == 200
+        assert '<events demo="true">' in r.text
+        assert r.text.count('<event>') == 4
+    assert client.get('/auth/status').json() == {'signed_in': False, 'demo': True}

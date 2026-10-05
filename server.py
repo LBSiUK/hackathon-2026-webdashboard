@@ -89,6 +89,41 @@ def get_base_url():
     return os.environ.get('BASE_URL', 'http://localhost:5020').rstrip('/')
 
 
+def demo_mode() -> bool:
+    """DEMO_MODE=1 fills the calendar and tasks tiles with sample entries
+    when nobody has signed in with Google (handy for screenshots and trying
+    the dashboard without a Google Cloud project)."""
+    return os.environ.get('DEMO_MODE', '').strip().lower() in ('1', 'true', 'yes', 'on')
+
+
+DEMO_EVENTS = [
+    ((10, 0), (10, 30), "Doctor's appointment"),
+    ((12, 30), (14, 0), 'Lunch with Sarah'),
+    ((15, 0), (15, 30), 'Video call with the grandchildren'),
+    ((18, 30), (20, 0), 'Quiz night at the community centre'),
+]
+
+DEMO_REMINDERS = [
+    ((9, 0), (9, 15), 'Take morning tablets'),
+    ((11, 0), (11, 15), 'Water the plants'),
+    ((16, 0), (16, 15), 'Ring the pharmacy about a repeat prescription'),
+    ((19, 0), (19, 15), 'Put the bins out'),
+]
+
+
+def demo_events_xml(entries) -> bytes:
+    """Sample entries for today, in the same XML shape as the Google-backed routes."""
+    today = datetime.now().astimezone().replace(second=0, microsecond=0)
+    root = ET.Element('events', demo='true')
+    for (sh, sm), (eh, em), title in entries:
+        node = ET.SubElement(root, 'event')
+        ET.SubElement(node, 'title').text = title
+        ET.SubElement(node, 'start').text = today.replace(hour=sh, minute=sm).isoformat()
+        ET.SubElement(node, 'end').text = today.replace(hour=eh, minute=em).isoformat()
+        ET.SubElement(node, 'link').text = ''
+    return to_xml_string(root)
+
+
 def load_calendar_credentials():
     if not os.path.exists(CALENDAR_TOKEN_FILE):
         return None
@@ -275,8 +310,8 @@ async def auth_callback(
 def auth_status():
     creds = load_calendar_credentials()
     if not creds:
-        return JSONResponse(content={"signed_in": False})
-    return JSONResponse(content={"signed_in": True})
+        return JSONResponse(content={"signed_in": False, "demo": demo_mode()})
+    return JSONResponse(content={"signed_in": True, "demo": False})
 
 
 @app.post('/auth/logout')
@@ -297,6 +332,8 @@ def auth_logout():
 async def calendar_events(force: Optional[bool] = Query(False)):
     creds = load_calendar_credentials()
     if not creds:
+        if demo_mode():
+            return Response(content=demo_events_xml(DEMO_EVENTS), media_type='application/xml')
         raise HTTPException(status_code=401, detail='Sign in with Google to see calendar')
     now = time.time()
     entry = None if force else cache.get(CALENDAR_CACHE_KEY)
@@ -367,6 +404,8 @@ def _get_reminders_calendar_id(service):
 async def calendar_reminders(force: Optional[bool] = Query(False)):
     creds = load_calendar_credentials()
     if not creds:
+        if demo_mode():
+            return Response(content=demo_events_xml(DEMO_REMINDERS), media_type='application/xml')
         raise HTTPException(status_code=401, detail='Sign in with Google to see reminders')
     now = time.time()
     entry = None if force else cache.get(CALENDAR_REMINDERS_CACHE_KEY)
