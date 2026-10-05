@@ -79,6 +79,13 @@ const rssSources = {
     sky: { label: 'Sky News (UK)', url: 'https://feeds.skynews.com/feeds/rss/uk.xml' },
 };
 
+// server.py serves this page and its API from the same origin, so API calls use
+// relative URLs. That also means an iPad on the same network talks to the right
+// machine instead of to its own localhost. Set window.DASHBOARD_API_BASE before
+// this script loads to use a backend somewhere else.
+const API_BASE = window.DASHBOARD_API_BASE
+    || (window.location.protocol === 'file:' ? 'http://localhost:5020' : '');
+
 let currentThemeKey = localStorage.getItem('dashboardTheme') || 'purple';
 let currentRssKey = localStorage.getItem('dashboardRssSource') || 'bbc';
 
@@ -434,11 +441,11 @@ function renderTiles() {
                 async function loadRss(force=false){
                     try{
                         const rssUrl = rssSources[currentRssKey]?.url || rssSources.bbc.url;
-                        const url = 'http://localhost:5020/rss?url=' + encodeURIComponent(rssUrl) + (force ? '&force=true' : '');
+                        const url = API_BASE + '/rss?url=' + encodeURIComponent(rssUrl) + (force ? '&force=true' : '');
                         const res = await fetch(url);
                         const txt = await res.text();
                         renderRSS(txt);
-                        const lastUrl = 'http://localhost:5020/rss/last_updated?url=' + encodeURIComponent(rssUrl);
+                        const lastUrl = API_BASE + '/rss/last_updated?url=' + encodeURIComponent(rssUrl);
                         lastUpdatedIso = await fetch(lastUrl).then(r=>r.text()).catch(()=> 'never');
                         lastUpdated.textContent = 'Last updated: ' + formatLastUpdated(lastUpdatedIso);
                     }catch(e){
@@ -459,7 +466,7 @@ function renderTiles() {
             }
             const weatherEl = tile.querySelector('[data-weather]');
             if (weatherEl) {
-                const backendWeather = 'http://localhost:5020/weather';
+                const backendWeather = API_BASE + '/weather';
                 const lat = weatherEl.getAttribute('data-lat') || '50.8225';
                 const lon = weatherEl.getAttribute('data-lon') || '-0.1372';
                 const wrapper = document.createElement('div');
@@ -583,8 +590,8 @@ function renderTiles() {
                 tile.innerHTML = '';
                 tile.appendChild(calWrapper);
 
-                const backendCalendar = 'http://localhost:5020/calendar/events';
-                const backendCalendarRefresh = 'http://localhost:5020/calendar/refresh';
+                const backendCalendar = API_BASE + '/calendar/events';
+                const backendCalendarRefresh = API_BASE + '/calendar/refresh';
 
                 function formatEventTime(startStr) {
                     if (!startStr) return '';
