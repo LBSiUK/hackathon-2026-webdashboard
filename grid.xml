@@ -36,7 +36,7 @@
     </item>
 
     <item id="3" label="Today's calendar events" locations="{C,0}, {C,1}, {D,0}, {D,1}" type="content" />
-    <item id="10" label="How do I use this terminal?" locations="{D,4}" link="howitsmade.html"/>
+    <item id="10" label="How to use this dashboard" locations="{D,4}" link="instructions.html"/>
     <item id="10" label="Settings" locations="{D,5}" type="menu" link="settings.html" />
 
     <item id="6" label="Today's tasks" locations="{C,2}, {C,3}, {D,2}, {D,3}" type="content" />

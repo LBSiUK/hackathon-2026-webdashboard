@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How to Use Your Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Funnel+Display:wght@300..800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        body.page-instructions {
+            background: #1a1a2e;
+            color: white;
+            padding: 2.5rem 2.5rem 5rem 2.5rem;
+            height: auto !important;
+            min-height: 100vh;
+            font-family: "Funnel Display", sans-serif;
+            box-sizing: border-box;
+            overflow: visible !important;
+            overflow-y: scroll !important;
+        }
+
+        body.page-instructions * {
+            box-sizing: border-box;
+        }
+
+        .instructions-title {
+            font-size: 2.2rem;
+            font-weight: 300;
+            margin-bottom: 0.4rem;
+        }
+
+        .instructions-subtitle {
+            font-size: 1.1rem;
+            opacity: 0.6;
+            font-weight: 300;
+            margin-bottom: 2.5rem;
+        }
+
+        .instruction-card {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 14px;
+            padding: 1.8rem 2rem;
+            margin-bottom: 1.6rem;
+        }
+
+        .instruction-card:last-child {
+            margin-bottom: 0;
+        }
+
+        .instruction-card__heading {
+            display: flex;
+            align-items: center;
+            gap: 0.9rem;
+            margin-bottom: 1.1rem;
+        }
+
+        .instruction-card__icon {
+            font-size: 2rem;
+            line-height: 1;
+            flex-shrink: 0;
+        }
+
+        .instruction-card__title {
+            font-size: 1.65rem;
+            font-weight: 600;
+            line-height: 1.2;
+        }
+
+        .instruction-card__body {
+            font-size: 1.2rem;
+            font-weight: 300;
+            line-height: 1.7;
+            opacity: 0.9;
+        }
+
+        .instruction-card__body p {
+            margin: 0 0 0.75rem 0;
+        }
+
+        .instruction-card__body p:last-child {
+            margin-bottom: 0;
+        }
+
+        .tip {
+            margin-top: 1.1rem;
+            padding: 0.9rem 1.2rem;
+            background: rgba(108, 140, 255, 0.12);
+            border-left: 3px solid #6c8cff;
+            border-radius: 0 8px 8px 0;
+            font-size: 1.1rem;
+            line-height: 1.6;
+            font-weight: 400;
+        }
+
+        .tip strong {
+            font-weight: 600;
+            color: #aabbff;
+        }
+    </style>
+</head>
+<body class="page-instructions">
+
+    <h1 class="instructions-title">How to Use Your Dashboard</h1>
+    <p class="instructions-subtitle">A simple guide to everything on your screen</p>
+
+    <div class="instruction-card">
+        <div class="instruction-card__heading">
+            <span class="instruction-card__icon">🌤️</span>
+            <span class="instruction-card__title">Weather</span>
+        </div>
+        <div class="instruction-card__body">
+            <p>The weather panel is split into two halves. The top half shows the weather for the <strong>next 24 hours</strong>, and the bottom half shows a <strong>2-week forecast</strong>.</p>
+            <p>Each block shows the time or day, the temperature, and a brief weather description (such as "Clear" or "Rain").</p>
+            <p>If there are more blocks than fit on the screen, you can scroll through them. Tap the <strong>circle arrow buttons</strong> — the one pointing left goes back, and the one pointing right moves forward.</p>
+            <div class="tip"><strong>Tip:</strong> You can also swipe left or right directly on the weather panel if you are using a touchscreen.</div>
+        </div>
+    </div>
+
+    <div class="instruction-card">
+        <div class="instruction-card__heading">
+            <span class="instruction-card__icon">📰</span>
+            <span class="instruction-card__title">News Feed</span>
+        </div>
+        <div class="instruction-card__body">
+            <p>The news panel shows the latest headlines from your chosen news source. Tap any headline to open the full article in your browser.</p>
+            <p>If you would like to change which news channel the headlines come from, tap the <strong>Settings</strong> tile in the bottom-right corner of the dashboard, then choose your preferred news source from the list.</p>
+            <p>Available sources include <strong>BBC News</strong>, <strong>GB News</strong>, and <strong>Sky News</strong>.</p>
+            <div class="tip"><strong>Tip:</strong> Press the <strong>Refresh</strong> button at the top of the news panel at any time to load the very latest headlines.</div>
+        </div>
+    </div>
+
+    <div class="instruction-card">
+        <div class="instruction-card__heading">
+            <span class="instruction-card__icon">💬</span>
+            <span class="instruction-card__title">AI Assistant (Chat)</span>
+        </div>
+        <div class="instruction-card__body">
+            <p>The chat panel on the right-hand side of the screen is your personal AI assistant. You can ask it almost anything, just as you would ask a helpful friend or family member.</p>
+            <p>Here are some things you can ask it:</p>
+            <p>
+                &bull; <strong>"What is the weather like tomorrow?"</strong><br>
+                &bull; <strong>"How do I copy and paste text on my computer?"</strong><br>
+                &bull; <strong>"Add a doctor's appointment to my calendar for next Tuesday at 10am."</strong><br>
+                &bull; <strong>"What are some easy recipes for dinner tonight?"</strong>
+            </p>
+            <p>Simply click or tap inside the message box at the bottom of the chat panel, type your question, and then press the <strong>Send</strong> button.</p>
+            <div class="tip"><strong>Tip:</strong> There are no silly questions — the assistant is very patient and will always try its best to help you.</div>
+        </div>
+    </div>
+
+    <div class="instruction-card">
+        <div class="instruction-card__heading">
+            <span class="instruction-card__icon">📅</span>
+            <span class="instruction-card__title">Calendar &amp; Tasks</span>
+        </div>
+        <div class="instruction-card__body">
+            <p>The calendar panel shows your events for today, pulled directly from your <strong>Google Calendar</strong>. If you have signed in with Google (via the Settings page), your appointments and reminders will appear here automatically.</p>
+            <p>The tasks panel shows your upcoming to-do items from Google Calendar as well.</p>
+            <p>To <strong>add a new event</strong>, simply ask the AI assistant in the chat panel — for example: <em>"Add a lunch with Mary on Saturday at 1pm."</em> The assistant will take care of it for you.</p>
+            <p>If your events are not showing or look out of date, press the <strong>Refresh</strong> button at the top of the calendar panel to update them.</p>
+            <div class="tip"><strong>Tip:</strong> To connect your Google Calendar, tap the <strong>Settings</strong> tile (bottom-right of the dashboard) and tap <strong>Sign in with Google</strong>. You only need to do this once.</div>
+        </div>
+    </div>
+
+    <div class="instruction-card">
+        <div class="instruction-card__heading">
+            <span class="instruction-card__icon">⚙️</span>
+            <span class="instruction-card__title">Settings</span>
+        </div>
+        <div class="instruction-card__body">
+            <p>Tap the <strong>Settings</strong> tile in the bottom-right corner of the dashboard to open the settings page. From here you can:</p>
+            <p>
+                &bull; Change the <strong>background colour theme</strong> of the dashboard.<br>
+                &bull; Choose your preferred <strong>news source</strong>.<br>
+                &bull; <strong>Sign in with Google</strong> to connect your calendar.
+            </p>
+            <p>When you are done, tap the <strong>✕ button</strong> in the top-right corner of the settings window to return to the dashboard.</p>
+        </div>
+    </div>
+
+</body>
+</html>
