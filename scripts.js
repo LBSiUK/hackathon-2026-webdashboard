@@ -570,13 +570,20 @@ function renderTiles() {
                 })();
                 weatherEl.parentNode.replaceChild(wrapper, weatherEl);
             }
-            if (id === '3') {
+            // Tile 3 lists today's Google Calendar events; tile 6 lists today's tasks
+            // from a calendar called "Reminders". Both come from server.py.
+            const calendarFeeds = {
+                '3': { path: '/calendar/events', refresh: '/calendar/refresh', title: "Today's calendar events", empty: 'No events today.', noun: 'calendar' },
+                '6': { path: '/calendar/reminders', refresh: '/calendar/reminders/refresh', title: "Today's tasks", empty: 'No tasks today.', noun: 'tasks' },
+            };
+            const calendarFeed = calendarFeeds[id];
+            if (calendarFeed) {
                 const calWrapper = document.createElement('div');
                 calWrapper.style.cssText = 'display:flex; flex-direction:column; height:100%;';
                 const calHeader = document.createElement('div');
                 calHeader.style.cssText = 'flex:0 0 auto; display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;';
                 const calTitle = document.createElement('div');
-                calTitle.textContent = label || "Today's calendar events";
+                calTitle.textContent = label || calendarFeed.title;
                 calTitle.style.cssText = 'font-weight:600; font-size:2em;';
                 const calRefreshBtn = document.createElement('button');
                 calRefreshBtn.textContent = 'Refresh';
@@ -590,8 +597,9 @@ function renderTiles() {
                 tile.innerHTML = '';
                 tile.appendChild(calWrapper);
 
-                const backendCalendar = API_BASE + '/calendar/events';
-                const backendCalendarRefresh = API_BASE + '/calendar/refresh';
+                const backendCalendar = API_BASE + calendarFeed.path;
+                const backendCalendarRefresh = API_BASE + calendarFeed.refresh;
+                const signInMessage = 'Sign in with Google in Settings to see your ' + calendarFeed.noun + '.';
 
                 function formatEventTime(startStr) {
                     if (!startStr) return '';
@@ -628,7 +636,7 @@ function renderTiles() {
                             div.appendChild(a);
                             calList.appendChild(div);
                         });
-                        if (events.length === 0) calList.innerHTML = '<div style="opacity:0.8;">No events today.</div>';
+                        if (events.length === 0) calList.innerHTML = '<div style="opacity:0.8;">' + calendarFeed.empty + '</div>';
                     } catch (e) {
                         calList.innerHTML = '<div>Could not parse calendar.</div>';
                     }
@@ -638,7 +646,7 @@ function renderTiles() {
                     try {
                         const res = await fetch(backendCalendar);
                         if (res.status === 401 || res.status === 501) {
-                            calList.innerHTML = '<div style="opacity:0.9;">Sign in with Google in Settings to see your calendar.</div>';
+                            calList.innerHTML = '<div style="opacity:0.9;">' + signInMessage + '</div>';
                             return;
                         }
                         if (!res.ok) throw new Error(res.statusText);
@@ -646,7 +654,7 @@ function renderTiles() {
                         renderCalendarEvents(txt);
                     } catch (e) {
                         console.error('Calendar load error', e);
-                        calList.innerHTML = '<div>Sign in with Google in Settings to see your calendar.</div>';
+                        calList.innerHTML = '<div>' + signInMessage + '</div>';
                     }
                 }
 
