@@ -459,4 +459,25 @@ async def calendar_reminders_refresh():
     return PlainTextResponse('ok')
 
 
-app.mount("/", StaticFiles(directory=os.path.dirname(os.path.abspath(__file__)), html=True), name="static")
+class FrontendFiles(StaticFiles):
+    """Serves the dashboard's own files and nothing else.
+
+    The page lives in the project folder, which also holds calendar_tokens.json
+    (a Google refresh token plus the client secret), auth_states.json, maybe a
+    .env file, and .git. Only file types the front end uses are served, and
+    nothing under a dot-folder.
+    """
+
+    ALLOWED_SUFFIXES = {'.html', '.js', '.css', '.xml', '.ico', '.svg', '.png', '.jpg', '.jpeg', '.webp', '.gif'}
+
+    async def get_response(self, path, scope):
+        parts = [p for p in path.replace('\\', '/').split('/') if p and p != '.']
+        if parts:
+            hidden = any(p.startswith('.') for p in parts)
+            suffix = os.path.splitext(parts[-1])[1].lower()
+            if hidden or suffix not in self.ALLOWED_SUFFIXES:
+                raise HTTPException(status_code=404)
+        return await super().get_response(path, scope)
+
+
+app.mount("/", FrontendFiles(directory=os.path.dirname(os.path.abspath(__file__)), html=True), name="static")

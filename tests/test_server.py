@@ -82,3 +82,15 @@ def test_demo_mode_serves_sample_calendar_and_tasks(client, monkeypatch):
         assert '<events demo="true">' in r.text
         assert r.text.count('<event>') == 4
     assert client.get('/auth/status').json() == {'signed_in': False, 'demo': True}
+
+
+@pytest.mark.parametrize('path', ['/', '/index.html', '/scripts.js', '/styles.css', '/grid.xml',
+                                  '/settings.html', '/images/sunrise.webp'])
+def test_front_end_files_are_served(client, path):
+    assert client.get(path).status_code == 200
+
+
+@pytest.mark.parametrize('path', ['/server.py', '/requirements.txt', '/.gitignore', '/.git/config',
+                                  '/calendar_tokens.json', '/auth_states.json', '/.env'])
+def test_other_project_files_are_not_served(client, path):
+    assert client.get(path).status_code == 404
