@@ -355,10 +355,12 @@ function renderTiles() {
                 wrapper.style.height = '100%';
 
                 const header = document.createElement('div');
-                header.style.cssText = 'flex:0 0 auto; display:flex; flex-direction:column; align-items:center; margin-bottom:8px; position:relative;';
+                header.style.cssText = 'flex:0 0 auto; display:flex; flex-direction:column; margin-bottom:8px;';
 
+                // Title on the left and Refresh on the right, like the calendar tiles, so
+                // the button no longer covers the title on smaller screens.
                 const topRow = document.createElement('div');
-                topRow.style.cssText = 'width:100%; display:flex; justify-content:center; align-items:center; position:relative;';
+                topRow.style.cssText = 'width:100%; display:flex; justify-content:space-between; align-items:center; gap:8px;';
 
                 const title = document.createElement('div');
                 title.textContent = rssSources[currentRssKey]?.label || label || 'News';
@@ -366,10 +368,10 @@ function renderTiles() {
 
                 const refreshBtn = document.createElement('button');
                 refreshBtn.textContent = 'Refresh';
-                refreshBtn.style.cssText = 'position:absolute; right:0; top:0; cursor:pointer; font-size:2em;';
+                refreshBtn.style.cssText = 'flex:0 0 auto; cursor:pointer; font-size:2em;';
 
                 const lastUpdated = document.createElement('div');
-                lastUpdated.style.cssText = 'font-size:0.6em; opacity:0.85; text-align:center; margin-top:4px;';
+                lastUpdated.style.cssText = 'font-size:0.6em; opacity:0.85; margin-top:4px;';
                 lastUpdated.textContent = '';
 
                 topRow.appendChild(title);
