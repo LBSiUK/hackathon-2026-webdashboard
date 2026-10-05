@@ -188,21 +188,19 @@ def weather_last_updated(lat: float = Query(50.8225), lon: float = Query(-0.1372
     return PlainTextResponse(time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime(entry['ts'])))
 
 
-@app.get('/auth/google')
-async def auth_google():
-    client_id = os.environ.get('GOOGLE_CLIENT_ID')
-    client_secret = os.environ.get('GOOGLE_CLIENT_SECRET')
-    if not client_id or not client_secret:
-        raise HTTPException(status_code=501, detail='Google OAuth not configured')
-    state = secrets.token_urlsafe(32)
-    states = _load_auth_states()
-    # Expire any states older than 10 minutes
-    now = time.time()
-    states = {k: v for k, v in states.items() if now - v < 600}
-    states[state] = now
-    _save_auth_states(states)
+AUTH_STATE_TTL = 600
+
+
+def _state_time(entry) -> float:
+    # Older auth_states.json files stored a bare timestamp for each state.
+    if isinstance(entry, dict):
+        return entry.get('ts', 0)
+    return entry
+
+
+def _oauth_flow(client_id: str, client_secret: str, code_verifier: Optional[str] = None) -> Flow:
     base = get_base_url()
-    flow = Flow.from_client_config(
+    return Flow.from_client_config(
         {
             "web": {
                 "client_id": client_id,
@@ -214,8 +212,28 @@ async def auth_google():
         },
         scopes=SCOPES,
         redirect_uri=f"{base}/auth/callback",
+        code_verifier=code_verifier,
     )
+
+
+@app.get('/auth/google')
+async def auth_google():
+    client_id = os.environ.get('GOOGLE_CLIENT_ID')
+    client_secret = os.environ.get('GOOGLE_CLIENT_SECRET')
+    if not client_id or not client_secret:
+        raise HTTPException(status_code=501, detail='Google OAuth not configured')
+    state = secrets.token_urlsafe(32)
+    states = _load_auth_states()
+    # Expire any states older than 10 minutes
+    now = time.time()
+    states = {k: v for k, v in states.items() if now - _state_time(v) < AUTH_STATE_TTL}
+    flow = _oauth_flow(client_id, client_secret)
     auth_url, _ = flow.authorization_url(access_type='offline', prompt='consent', state=state)
+    # authorization_url() adds a PKCE code_challenge to the URL, so Google expects
+    # the matching code_verifier when the callback swaps the code for tokens.
+    # Keep it with the state; the callback builds a fresh Flow that would not know it.
+    states[state] = {'ts': now, 'code_verifier': flow.code_verifier}
+    _save_auth_states(states)
     return RedirectResponse(url=auth_url)
 
 
@@ -230,32 +248,27 @@ async def auth_callback(
     states = _load_auth_states()
     if not code or not state or state not in states:
         raise HTTPException(status_code=400, detail='Invalid callback — please try signing in again')
-    del states[state]
+    entry = states.pop(state)
     _save_auth_states(states)
+    if time.time() - _state_time(entry) > AUTH_STATE_TTL:
+        raise HTTPException(status_code=400, detail='Sign-in took too long, please try again')
     client_id = os.environ.get('GOOGLE_CLIENT_ID')
     client_secret = os.environ.get('GOOGLE_CLIENT_SECRET')
     if not client_id or not client_secret:
         raise HTTPException(status_code=501, detail='Google OAuth not configured')
-    base = get_base_url()
-    flow = Flow.from_client_config(
-        {
-            "web": {
-                "client_id": client_id,
-                "client_secret": client_secret,
-                "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-                "token_uri": "https://oauth2.googleapis.com/token",
-                "redirect_uris": [f"{base}/auth/callback"],
-            }
-        },
-        scopes=SCOPES,
-        redirect_uri=f"{base}/auth/callback",
-    )
-    flow.fetch_token(code=code)
+    code_verifier = entry.get('code_verifier') if isinstance(entry, dict) else None
+    flow = _oauth_flow(client_id, client_secret, code_verifier=code_verifier)
+    try:
+        flow.fetch_token(code=code)
+    except Exception:
+        return RedirectResponse(url=f"{get_base_url()}/settings.html?error=token_exchange_failed")
     creds = flow.credentials
     save_calendar_credentials(creds)
     if CALENDAR_CACHE_KEY in cache:
         del cache[CALENDAR_CACHE_KEY]
-    return RedirectResponse(url=f"{base}/settings.html?signed_in=1")
+    if CALENDAR_REMINDERS_CACHE_KEY in cache:
+        del cache[CALENDAR_REMINDERS_CACHE_KEY]
+    return RedirectResponse(url=f"{get_base_url()}/settings.html?signed_in=1")
 
 
 @app.get('/auth/status')
