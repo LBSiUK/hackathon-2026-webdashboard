@@ -39,7 +39,7 @@ def rss_cached():
         headers = {'Content-Type': r.headers.get('Content-Type', 'text/xml; charset=utf-8')}
         cache[url] = (now, content, headers)
 
-    resp = Response(content, headers)
+    resp = Response(content, headers=headers)
     resp.headers['Access-Control-Allow-Origin'] = '*'
     return resp
 
