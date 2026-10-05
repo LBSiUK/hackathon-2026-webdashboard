@@ -17,7 +17,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 
 from google.oauth2.credentials import Credentials
 from google.auth.transport.requests import Request
@@ -340,8 +340,10 @@ async def calendar_events(force: Optional[bool] = Query(False)):
     if not entry or now - entry['ts'] > CALENDAR_CACHE_TTL:
         try:
             service = build('calendar', 'v3', credentials=creds)
-            utc_now = datetime.now(timezone.utc)
-            start = utc_now.replace(hour=0, minute=0, second=0, microsecond=0)
+            # "Today" in the server's local time zone, not UTC: in British Summer Time
+            # a UTC day runs from 1am to 1am and misses events just after midnight.
+            local_now = datetime.now().astimezone()
+            start = local_now.replace(hour=0, minute=0, second=0, microsecond=0)
             end = start + timedelta(days=1)
             events_result = service.events().list(
                 calendarId='primary',
@@ -418,8 +420,10 @@ async def calendar_reminders(force: Optional[bool] = Query(False)):
                 xml_bytes = to_xml_string(root)
                 cache[CALENDAR_REMINDERS_CACHE_KEY] = {'ts': now, 'data': xml_bytes}
                 return Response(content=xml_bytes, media_type='application/xml')
-            utc_now = datetime.now(timezone.utc)
-            start = utc_now.replace(hour=0, minute=0, second=0, microsecond=0)
+            # "Today" in the server's local time zone, not UTC: in British Summer Time
+            # a UTC day runs from 1am to 1am and misses events just after midnight.
+            local_now = datetime.now().astimezone()
+            start = local_now.replace(hour=0, minute=0, second=0, microsecond=0)
             end = start + timedelta(days=1)
             events_result = service.events().list(
                 calendarId=reminders_cal_id,
