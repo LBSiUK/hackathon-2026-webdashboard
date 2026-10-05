@@ -291,12 +291,12 @@ body {
 }
 
 .weather-tile {
-    background-image: linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5)), 
+    background-image: linear-gradient(rgba(0, 0, 0, 0.45), rgba(0, 0, 0, 0.45)), 
         url('images/sunrise.webp');
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
-    color: black;
+    color: white;
 }
 
 .weather-tile.content-tile {
@@ -313,34 +313,35 @@ body {
 }
 
 .weather-widget__section {
+    position: relative;
     flex: 0 0 50%;
     min-height: 0;
     margin: 0;
     padding: 0;
-    display: flex;
-    flex-direction: column;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.25);
+    border-bottom: 3px solid rgba(255, 255, 255, 0.35);
 }
 
 .weather-widget__section:last-child {
     border-bottom: none;
 }
 
-.weather-widget__header {
-    flex: 0 0 auto;
-    padding: 4px 0;
-    padding-left: 0;
+.weather-widget__label {
+    position: absolute;
+    top: 5px;
+    left: 7px;
+    z-index: 2;
+    margin: 0;
+    padding: 0;
     font-weight: 600;
-    font-size: 1.15em;
-    text-align: left;
-}
-
-.weather-widget__header--top {
-    padding-top: 0;
+    font-size: 1.35em;
+    line-height: 1.1;
+    text-shadow: 0 2px 6px rgba(0, 0, 0, 0.55);
+    pointer-events: none;
 }
 
 .weather-widget__scroll-row {
-    flex: 1;
+    width: 100%;
+    height: 100%;
     display: flex;
     align-items: stretch;
     min-height: 0;
@@ -349,37 +350,26 @@ body {
 
 .weather-widget__scroll-area {
     flex: 1;
+    height: 100%;
     overflow-x: auto;
     overflow-y: hidden;
     scroll-behavior: smooth;
     display: flex;
-    gap: 8px;
+    gap: 3px;
     padding: 0;
     align-items: stretch;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
 }
 
-.weather-widget__card {
-    flex: 0 0 auto;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    text-align: center;
-    background: var(--theme-card-bg);
-    min-height: 0;
-    box-sizing: border-box;
-}
-
-.weather-widget__card--hourly {
-    width: 64px;
-}
-
-.weather-widget__card--daily {
-    width: 80px;
+.weather-widget__scroll-area::-webkit-scrollbar {
+    display: none;
 }
 
 .weather-widget__arrow-btn {
-    flex: 0 0 48px;
-    min-height: 0;
+    flex: 0 0 auto;
+    width: 72px;
+    height: 100%;
     background: transparent;
     border: none;
     cursor: pointer;
@@ -387,6 +377,54 @@ body {
     align-items: center;
     justify-content: center;
     padding: 0;
+    color: inherit;
+    font-size: 2.4em;
+    opacity: 0.85;
+}
+
+.weather-widget__arrow-btn:hover {
+    opacity: 1;
+}
+
+.weather-widget__card {
+    flex: 0 0 auto;
+    height: 100%;
+    aspect-ratio: 1 / 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    text-align: center;
+    background: var(--theme-card-bg);
+    border-right: 2px solid rgba(255, 255, 255, 0.3);
+    box-sizing: border-box;
+    padding: 8px 6px 6px;
+    font-size: calc(var(--tile-size) * 0.08);
+}
+
+.weather-widget__line {
+    line-height: 1.1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.weather-widget__line--time {
+    font-size: 1.05em;
+    opacity: 0.85;
+}
+
+.weather-widget__line--temp {
+    font-weight: 600;
+    font-size: 1.35em;
+}
+
+.weather-widget__line--desc {
+    font-size: 1em;
+    opacity: 0.9;
+}
+
+.weather-widget__line--min {
+    font-size: 1.05em;
 }
 
 .nav-arrow,
