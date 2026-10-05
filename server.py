@@ -68,10 +68,11 @@ def _save_auth_states(states: dict):
     except Exception:
         pass
 
-_client_id = os.environ.get('GOOGLE_CLIENT_ID')
-_client_secret = os.environ.get('GOOGLE_CLIENT_SECRET')
-print('GOOGLE_CLIENT_ID:', _client_id)
-print('GOOGLE_CLIENT_SECRET:', _client_secret)
+# Never print the client secret itself: logs get shared and pasted around.
+if os.environ.get('GOOGLE_CLIENT_ID') and os.environ.get('GOOGLE_CLIENT_SECRET'):
+    print('Google sign-in: configured')
+else:
+    print('Google sign-in: not configured (set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET)')
 
 
 async def fetch_text(url: str, timeout=10.0):
